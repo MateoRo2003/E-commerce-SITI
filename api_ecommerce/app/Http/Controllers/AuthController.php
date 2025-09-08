@@ -6,6 +6,7 @@ use Validator;
 use App\Models\User;
 use App\Mail\VerifiedMail;
 use Illuminate\Http\Request;
+use App\Mail\ForgotPasswordMail;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -20,7 +21,8 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login', 'register', 'login_ecommerce', 'verified_auth']]);
+        $this->middleware('auth:api', ['except' => ['login', 'register', 'login_ecommerce', 
+        'verified_auth', 'verified_email', 'verified_code', 'new_password']]);
     }
  
  
@@ -35,7 +37,7 @@ class AuthController extends Controller
             'surname' => 'required',
             'phone' => 'required',
             'email' => 'required|email|unique:users',
-            'password' => 'required|min:8',
+            'password' => 'required|min:6',
         ]);
  
         if($validator->fails()){
@@ -52,11 +54,77 @@ class AuthController extends Controller
         $user->password = bcrypt(request()->password);
         $user->save();
 
-        Mail::to(\request()->email)->send(new VerifiedMail($user));
+        Mail::to(request()->email)->send(new VerifiedMail($user));
 
         return response()->json($user, 201);
     }
  
+
+
+
+    public function verified_email(Request $request) {
+        $user = User::where("email", $request->email)->first();
+
+        if (!$user) {
+            return response()->json([
+                "message" => 403,
+                "error" => "Usuario no encontrado"
+            ]);
+        }
+
+        // Verificar si el email está confirmado
+        if ($user->email_verified_at === null) {
+            return response()->json([
+                "message" => 403,
+                "error" => "Debes verificar tu cuenta antes de restablecer la contraseña"
+            ]);
+        }
+
+        // Generar código y enviar correo
+        $user->update(["code_verified" => uniqid()]);
+        Mail::to($request->email)->send(new ForgotPasswordMail($user));
+
+        return response()->json([
+            "message" => 200,
+            "info" => "Código enviado correctamente al correo"
+        ]);
+    }
+
+
+      
+    public function verified_code (Request $request) {
+        $user = User::where("code_verified", $request->code)->first();
+
+        if($user){
+            return response()->json(["message" => 200]);
+        }else{
+            return response()->json(["message" => 403]);
+        }
+    }
+
+    public function new_password(Request $request) {
+        $user = User::where("code_verified", $request->code)->first();
+
+        if (!$user) {
+            return response()->json(["message" => 403]);
+        }
+
+        // Verifica que la nueva contraseña no sea igual a la actual
+        if (\Hash::check($request->new_password, $user->password)) {
+            return response()->json(["message" => "La nueva contraseña no puede ser igual a la anterior."], 400);
+        }
+
+        $user->update([
+            "password" => bcrypt($request->new_password),
+            "code_verified" => null
+        ]);
+
+        return response()->json(["message" => 200]);
+    }
+
+
+      
+    
  
     /**
      * Get a JWT via given credentials.
