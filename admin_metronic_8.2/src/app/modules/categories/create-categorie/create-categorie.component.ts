@@ -25,6 +25,7 @@ export class CreateCategorieComponent {
   isLoading$: any;
   categories_first: any = [];
   categories_seconds: any = [];
+    // categories_seconds_backups:any = [];
   constructor(
     public categorieService: CategoriesService,
     public toastr: ToastrService,
@@ -38,12 +39,19 @@ export class CreateCategorieComponent {
   }
 
 
-  config(){
-    this.categorieService.configCategories().subscribe((resp:any) => {
+  config() {
+    this.categorieService.configCategories().subscribe((resp: any) => {
+      console.log(resp);
       this.categories_first = resp.categories_first;
+      console.log(this.categories_first);
       this.categories_seconds = resp.categories_seconds;
+      console.log(this.categories_seconds);
     })
   }
+  // changeDepartamento(){
+  //   this.categories_seconds_backups = this.categories_seconds.filter((item:any) => item.categorie_second_id == this.categorie_third_id)
+  //   // console.log(this.categories_seconds_backups,)
+  // }
 
 
   processFile($event: any, inputRef: any) {
@@ -148,6 +156,16 @@ export class CreateCategorieComponent {
         if (res.mesagge === 200) {
           this.toastr.success("Categoría creada con éxito");
           console.log(res);
+          this.name = ' ';
+          this.position = 1;
+          this.categorie_second_id = ' ';
+          this.categorie_third_id = ' ';
+          this.icon = null;
+          this.type_categorie = 1;
+          this.file_image = null;
+          this.image_previsualize = "assets/media/svg/illustrations/easy/2.svg";
+          this.icon_previsualize = this.default_icon;
+          this.config();
         } else if (res.mesagge === 403) {
           this.toastr.error("La categoría ya existe");
         } else {
@@ -163,6 +181,10 @@ export class CreateCategorieComponent {
         this.categorieService.isLoadingSubject.next(false);
       }
     });
+
+
+
+
 
   }
 
