@@ -20,10 +20,10 @@ export class CategoriesService {
     this.isLoading$ = this.isLoadingSubject.asObservable();
   }
 
-  listCategories(search: string) {
+  listCategories(page: number = 1, search:string) {
     this.isLoadingSubject.next(true)
     let headers = new HttpHeaders({ 'Authorization': 'Bearer ' + this.authservice.token });
-    let URL = URL_SERVICIOS + "/admin/categories";
+    let URL = URL_SERVICIOS + "/admin/categories?page="+page+"&search="+search;
     return this.http.get(URL, { headers: headers }).pipe(
       finalize(() => this.isLoadingSubject.next(false))
     );

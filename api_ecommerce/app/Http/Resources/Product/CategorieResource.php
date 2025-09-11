@@ -24,11 +24,12 @@ class CategorieResource extends JsonResource
                 "name" => $this->resource->categorie_second->name,
             ] : NULL,
             'categorie_third_id' => $this->resource->categorie_third_id,
-            "categorie_third" => $this->resource->categorie_second ? [
+            "categorie_third" => $this->resource->categorie_third ? [
                 "name" => $this->resource->categorie_third->name,
             ] : NULL,
             'position' => $this->resource->position,
             'type_categorie' => $this->resource->type_categorie,
+            'status' => $this->resource->status,
             "created_at" => $this->resource->created_at->format("Y-m-d H:i:s"),
         ];
     }

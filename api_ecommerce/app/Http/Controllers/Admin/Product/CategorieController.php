@@ -25,11 +25,12 @@ class CategorieController extends Controller
         ]);
     }
 
-  public function config(){
+    public function config()
+    {
 
-        $categories_first = Categorie::where("categorie_second_id",NULL)->where("categorie_third_id",NULL)->get();
-        
-        $categories_seconds = Categorie::where("categorie_second_id","<>",NULL)->where("categorie_third_id",NULL)->get();
+        $categories_first = Categorie::where("categorie_second_id", NULL)->where("categorie_third_id", NULL)->get();
+
+        $categories_seconds = Categorie::where("categorie_second_id", "<>", NULL)->where("categorie_third_id", NULL)->get();
 
         return response()->json([
             "categories_first" => $categories_first,
@@ -60,24 +61,21 @@ class CategorieController extends Controller
             return response()->json(["mesagge" => 403]);
         }
 
-        if ($request->hasFile("icon")) {
-            $file = $request->file("icon");
+        $data = $request->all();
+
+        if ($request->hasFile('icon')) {
+            $file = $request->file('icon');
             if ($file->getClientMimeType() != 'image/svg+xml') {
                 return response()->json(["message" => "El icono debe ser un archivo SVG"], 422);
             }
-            $path = Storage::putFile("categories/icons", $file);
-            $request->request->add(["icon" => $path]);
+            $data['icon'] = Storage::putFile('categories/icons', $file);
         }
 
-
-        // Si se envía una imagen, la almacena y agrega la ruta al request
-        if ($request->hasFile("image")) {
-            $path = Storage::putFile("categories", $request->file("image"));
-            $request->request->add(["image" => $path]);
+        if ($request->hasFile('image')) {
+            $data['image'] = Storage::putFile('categories', $request->file('image'));
         }
 
-        // Crea la categoría con los datos recibidos
-        $categorie = Categorie::create($request->all());
+        $categorie = Categorie::create($data);
 
         // Retorna mensaje de éxito
         return response()->json(["mesagge" => 200]);

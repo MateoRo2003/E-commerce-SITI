@@ -19,6 +19,7 @@ class Categorie extends Model
         'categorie_third_id',
         'position',
         'type_categorie',
+        'status',
     ];
 
 
