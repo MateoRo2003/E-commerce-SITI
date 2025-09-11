@@ -17,7 +17,8 @@ class Categorie extends Model
         'image',
         'categorie_second_id',
         'categorie_third_id',
-        'position'
+        'position',
+        'type_categorie',
     ];
 
 
@@ -36,7 +37,7 @@ class Categorie extends Model
     {
         return $this->belongsTo(Categorie::class, 'categorie_second_id');
     }
-    function categorie_third()
+    public function categorie_third()
     {
         return $this->belongsTo(Categorie::class, 'categorie_third_id');
     }

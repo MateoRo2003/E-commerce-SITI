@@ -22,7 +22,7 @@ export const LightHeaderConfig: ILayout = {
       display: true,
       default: {
         container: 'fluid',
-        containerClass: 'd-flex align-items-stretch justify-content-between',
+        containerClass: 'd-flex align-items-stretch justify-content-between bg-white shadow-sm',
         fixed: {
           desktop: true,
           mobile: false,
@@ -34,6 +34,7 @@ export const LightHeaderConfig: ILayout = {
         },
       },
     },
+
     sidebar: {
       componentName: 'sidebar',
       display: false,

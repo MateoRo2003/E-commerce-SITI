@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin\Product;
 use Illuminate\Http\Request;
 use App\Models\Product\Categorie;
 use App\Http\Controllers\Controller;
-use Illuminate\Container\Attributes\Storage;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Resources\Product\CategorieResource;
 use App\Http\Resources\Product\CategorieCollection;
-use PhpParser\Node\Stmt\Return_;
 
 class CategorieController extends Controller
 {
@@ -17,7 +17,7 @@ class CategorieController extends Controller
     public function index(Request $request)
     {
         $search = $request->search;
-        $categories = Categorie::where("name", "like", "%" . $search . "%")->orderBy("id", "desc")->pagintate(25);
+        $categories = Categorie::where("name", "like", "%" . $search . "%")->orderBy("id", "desc")->paginate(25);
 
         return response()->json([
             "total" => $categories->total(),
@@ -25,16 +25,17 @@ class CategorieController extends Controller
         ]);
     }
 
-    public function config()
-    {
-        $categories_first = Categorie::where("categorie_second_id", NULL)->where("categorie_third_id", NULL)->get();
-        $categories_seconds = Categorie::where("categorie_second_id", "<>", NULL)->where("categorie_third_id", NULL)->get();
+  public function config(){
+
+        $categories_first = Categorie::where("categorie_second_id",NULL)->where("categorie_third_id",NULL)->get();
+        
+        $categories_seconds = Categorie::where("categorie_second_id","<>",NULL)->where("categorie_third_id",NULL)->get();
+
         return response()->json([
             "categories_first" => $categories_first,
-            "cateogries_seconds" => $categories_seconds,
+            "categories_seconds" => $categories_seconds,
         ]);
     }
-
 
     /**
      * Store a newly created resource in storage.
@@ -58,6 +59,16 @@ class CategorieController extends Controller
             // Retorna error si la categoría ya existe
             return response()->json(["mesagge" => 403]);
         }
+
+        if ($request->hasFile("icon")) {
+            $file = $request->file("icon");
+            if ($file->getClientMimeType() != 'image/svg+xml') {
+                return response()->json(["message" => "El icono debe ser un archivo SVG"], 422);
+            }
+            $path = Storage::putFile("categories/icons", $file);
+            $request->request->add(["icon" => $path]);
+        }
+
 
         // Si se envía una imagen, la almacena y agrega la ruta al request
         if ($request->hasFile("image")) {
