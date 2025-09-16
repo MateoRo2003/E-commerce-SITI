@@ -5,6 +5,7 @@
         <div class="loading-text">Guardando...</div>
     </div>
 
+
     <div class="card-body border-top p-4 p-md-6">
         <div class="row mb-6">
             <div class="col-12 col-md-4 mb-3 mb-md-0">
@@ -80,10 +81,17 @@
                         accept=".jpeg, .bmp, .jpg, .png, .gif, .webp" (change)="processFile($event, imageInput)">
                     <!-- <label class="custom-file-label" for="customFile">Choose file</label> -->
                 </div>
-                <div class="d-flex justify-content-center py-2 preview-container">
-                    <img class="img-fluid preview-image" [src]="image_previsualize" width="200"
+                <div class="d-flex justify-content-center py-2 mt-6 preview-container position-relative"
+                    style="width: fit-content; margin: auto;">
+                    <!-- Imagen -->
+                    <img class="img-fluid preview-image rounded" [src]="image_previsualize" width="200"
                         alt="Imagen del producto">
+
+                    <!-- Botón de cancelar -->
+                    <button type="button" class="btn-remove" (click)="removeImage(imageInput)">✕</button>
                 </div>
+
+
 
             </div>
             <div class="col-lg-6 col-md-6 col-sm-12 my-2">
@@ -94,64 +102,76 @@
 
                 <!-- Input para subir el SVG -->
                 <input type="file" #iconInput name="icon" class="form-control form-control-lg form-control-solid"
-                    accept=".svg" (change)="processIcon($event, iconInput)">
+                    accept=".jpeg, .bmp, .jpg, .png, .gif, .webp" (change)="processIcon($event, iconInput)">
 
                 <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback"></div>
 
                 <!-- Previsualización del icono -->
-                <div class="d-flex justify-content-center py-2 preview-container">
-                    <img [src]="icon_previsualize" class="img-fluid preview-image"
-                        style="max-width: 100%; height: auto;"
+                <div class="d-flex justify-content-center py-2 mt-6 preview-container position-relative"
+                    style="width: fit-content; margin: auto;">
+                    <img class="img-fluid preview-image rounded" [src]="icon_previsualize" width="200"
                         [ngStyle]="{'transform': icon_previsualize === default_icon ? 'scaleX(-1)' : 'none'}"
                         alt="Previsualización del icono">
+                    <button type="button" class="btn-remove" (click)="removeIcon(iconInput)">✕</button>
                 </div>
-
             </div>
         </div>
 
-        <div class="row mb-6" *ngIf="type_categorie != 1">
-            <div class="col-lg-6 col-md-6 col-sm-12 my-2" *ngIf="type_categorie == 2">
-                <label class="col-lg-4 col-form-label mt-2 required fw-semibold fs-6 py-2">Departamento: (Primer Nivel)
-                </label>
-                <select class="form-control form-select-solid fw-bolder" [(ngModel)]="categorie_second_id"
-                    name="departament" placeholder="Selec. Dpto">
-                    <option value="">Selec.</option>
-                    <ng-container *ngFor="let item of categories_first">
-                        <option [value]="item.id">{{ item.name }}</option>
-
-                    </ng-container>
-                </select>
+        <div class="row g-6 mb-6" *ngIf="type_categorie != 1">
+            <!-- Segundo nivel -->
+            <div class="col-lg-6 col-md-6 col-sm-12" *ngIf="type_categorie == 2">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold fs-6 required">Departamento (Primer Nivel)</label>
+                    <select class="form-select form-select-solid rounded-3 shadow-sm fw-semibold"
+                        [(ngModel)]="categorie_second_id" name="departament">
+                        <option value="" disabled selected>Seleccione un departamento</option>
+                        <ng-container *ngFor="let item of categories_first">
+                            <option [value]="item.id">{{ item.name }}</option>
+                        </ng-container>
+                    </select>
+                </div>
             </div>
 
-            <div class="col-lg-6 col-md-6 col-sm-12 my-2" *ngIf="type_categorie == 3">
-                <label class="col-lg-4 col-form-label mt-2 required fw-semibold fs-6 py-2">Departamento: (Primer Nivel)
-                </label>
-                <select class="form-control form-select-solid fw-bolder" [(ngModel)]="categorie_third_id"
-                    name="departament" placeholder="Selec. Dpto">
-                    <option value="">Selec.</option>
-                    <ng-container *ngFor="let item of categories_first">
-                        <option [value]="item.id">{{ item.name }}</option>
-
-                    </ng-container>
-                </select>
+            <!-- Tercer nivel - Departamento -->
+            <div class="col-lg-6 col-md-6 col-sm-12" *ngIf="type_categorie == 3">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold fs-6 required">Departamento (Primer Nivel)</label>
+                    <select class="form-select form-select-solid rounded-3 shadow-sm fw-semibold"
+                        [(ngModel)]="categorie_third_id" (change)="changeDepartament()" name="departament">
+                        <option value="" disabled selected>Seleccione un departamento</option>
+                        <ng-container *ngFor="let item of categories_first">
+                            <option [value]="item.id">{{ item.name }}</option>
+                        </ng-container>
+                    </select>
+                </div>
             </div>
 
-            <div class="col-lg-6 col-md-6 col-sm-12 my-2" *ngIf="type_categorie == 3">
-                <label class="col-lg-4 col-form-label mt-2 required fw-semibold fs-6 py-2">Categoria: (Segundo Nivel)
-                </label>
-                <select class="form-control form-select-solid fw-bolder" [(ngModel)]="categorie_second_id"
-                    name="categorie" placeholder="Selec. Categoria">
-                    <option value="">Selec.</option>
-                    <ng-container *ngFor="let item of categories_seconds">
-                        <option [value]="item.id">{{item.name}}</option>
-
-                    </ng-container>
-                </select>
+            <!-- Tercer nivel - Categoría -->
+            <div class="col-lg-6 col-md-6 col-sm-12" *ngIf="type_categorie == 3">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold fs-6 required">Categoría (Segundo Nivel)</label>
+                    <select class="form-select form-select-solid rounded-3 shadow-sm fw-semibold"
+                        [(ngModel)]="categorie_second_id" name="categorie">
+                        <option value="" disabled selected>Seleccione una categoría</option>
+                        <ng-container *ngFor="let item of categories_seconds_backsups">
+                            <option [value]="item.id">{{ item.name }}</option>
+                        </ng-container>
+                    </select>
+                </div>
             </div>
         </div>
+
         <div class="row mb-6 justify-content-center">
             <div class="col-12 col-md-3 text-center">
-                <button class="btn btn-primary w-100 w-md-auto" (click)="save()" type="submit">Guardar</button>
+                <button type="submit" id="kt_ecommerce_add_category_submit" (click)="save()" class="btn btn-primary">
+                    <span class="indicator-label" _msttexthash="256646" _msthash="832"> Guardar cambios </span>
+                    <span class="indicator-progress" _msthidden="1">
+                        <font _mstmutation="1" _msttexthash="189800" _msthidden="1" _msthash="833">
+                            Espere Por favor... </font><span
+                            class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                    </span>
+                </button>
+
             </div>
         </div>
 

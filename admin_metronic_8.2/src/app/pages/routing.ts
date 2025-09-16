@@ -53,6 +53,10 @@ const Routing: Routes = [
     path: 'categories',
     loadChildren: () => import('../modules/categories/categories.module').then((m) => m.CategoriesModule),
   },
+  {
+    path: 'attributes',
+    loadChildren: () => import('../modules/attributes/attributes.module').then((m) => m.AttributesModule),
+  },
 
 
   {

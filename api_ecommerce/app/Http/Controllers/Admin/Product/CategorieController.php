@@ -17,7 +17,7 @@ class CategorieController extends Controller
     public function index(Request $request)
     {
         $search = $request->search;
-        $categories = Categorie::where("name", "like", "%" . $search . "%")->orderBy("id", "desc")->paginate(25);
+        $categories = Categorie::where("name", "like", "%" . $search . "%")->orderBy("id", "desc")->paginate(15);
 
         return response()->json([
             "total" => $categories->total(),
@@ -65,11 +65,18 @@ class CategorieController extends Controller
 
         if ($request->hasFile('icon')) {
             $file = $request->file('icon');
-            if ($file->getClientMimeType() != 'image/svg+xml') {
-                return response()->json(["message" => "El icono debe ser un archivo SVG"], 422);
+
+            // Validar que sea cualquier tipo de imagen
+            if (!str_starts_with($file->getClientMimeType(), 'image/')) {
+                return response()->json([
+                    "message" => "El icono debe ser un archivo de imagen válido"
+                ], 422);
             }
+
+            // Guardar el archivo
             $data['icon'] = Storage::putFile('categories/icons', $file);
         }
+
 
         if ($request->hasFile('image')) {
             $data['image'] = Storage::putFile('categories', $request->file('image'));
@@ -94,31 +101,58 @@ class CategorieController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
-    {
-        // Verifica si ya existe una categoría con el mismo nombre
-        $is_exists = Categorie::where("id", '<>', $id)->where("name", $request->name)->first();
+{
+    // Verifica si ya existe una categoría con el mismo nombre
+    $is_exists = Categorie::where("id", '<>', $id)
+        ->where("name", $request->name)
+        ->first();
 
-        if ($is_exists) {
-            // Retorna error si la categoría ya existe
-            return response()->json(["mesagge" => 403]);
-        }
-
-        $categorie = Categorie::findorFail($id);
-        // Si se envía una imagen, la almacena y agrega la ruta al request
-        if ($request->hasFile("image")) {
-            if ($categorie->image) {
-                Storage::delete($categorie->image);
-            }
-            $path = Storage::putFile("categories", $request->file("image"));
-            $request->request->add(["image" => $path]);
-        }
-
-        // Crea la categoría con los datos recibidos
-        $categorie->update($request->all());
-
-        // Retorna mensaje de éxito
-        return response()->json(["mesagge" => 200]);
+    if ($is_exists) {
+        // Retorna error si la categoría ya existe
+        return response()->json(["mesagge" => 403]);
     }
+
+    $categorie = Categorie::findOrFail($id);
+    $data = $request->all();
+
+    // Procesar icono
+    if ($request->hasFile("icon")) {
+        $file = $request->file("icon");
+
+        // Validar que sea cualquier tipo de imagen
+        if (!str_starts_with($file->getClientMimeType(), 'image/')) {
+            return response()->json([
+                "message" => "El icono debe ser un archivo de imagen válido"
+            ], 422);
+        }
+
+        // Borrar icono anterior si existe
+        if ($categorie->icon) {
+            Storage::delete($categorie->icon);
+        }
+
+        // Guardar nuevo
+        $data["icon"] = Storage::putFile("categories/icons", $file);
+    }
+
+    // Procesar imagen
+    if ($request->hasFile("image")) {
+        // Borrar imagen anterior si existe
+        if ($categorie->image) {
+            Storage::delete($categorie->image);
+        }
+
+        // Guardar nueva
+        $data["image"] = Storage::putFile("categories", $request->file("image"));
+    }
+
+    // Actualizar con los datos
+    $categorie->update($data);
+
+    // Retorna mensaje de éxito
+    return response()->json(["mesagge" => 200]);
+}
+
 
     /**
      * Remove the specified resource from storage.

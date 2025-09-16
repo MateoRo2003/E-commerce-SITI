@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CategoriesService } from '../service/categories.service';
-import { ToastrService } from 'ngx-toastr';
+
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-create-categorie',
@@ -17,18 +18,18 @@ export class CreateCategorieComponent {
   categorie_second_id: string = ''
   categorie_third_id: string = ''
 
-  image_previsualize: any = "assets/media/svg/illustrations/easy/2.svg"
+  image_previsualize: any = "/assets/media/svg/files/blank-image.svg";
   file_image: any = null;
-  default_icon: string = "assets/media/svg/illustrations/easy/2.svg";
+  default_icon: string = "/assets/media/svg/files/blank-image.svg";
   icon_previsualize: any = this.default_icon;
 
   isLoading$: any;
   categories_first: any = [];
   categories_seconds: any = [];
-    // categories_seconds_backups:any = [];
+  categories_seconds_backsups: any = [];
+  // categories_seconds_backups:any = [];
   constructor(
     public categorieService: CategoriesService,
-    public toastr: ToastrService,
 
   ) {
 
@@ -59,7 +60,11 @@ export class CreateCategorieComponent {
     if (!file) return; // si no hay archivo, salimos
 
     if (file.type.indexOf("image") < 0) {
-      this.toastr.error("El archivo no es una imagen");
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'El archivo no es una imagen',
+      });
       inputRef.value = null;
       this.image_previsualize = "assets/media/svg/illustrations/easy/2.svg"; // default
       this.file_image = null;
@@ -78,25 +83,44 @@ export class CreateCategorieComponent {
     const file = $event.target.files[0];
     if (!file) return;
 
-    if (file.type !== "image/svg+xml") {
-      this.toastr.error("El archivo debe ser un SVG");
+    // Revisar que sea una imagen (cualquier tipo de imagen)
+    if (file.type.indexOf("image") < 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'El archivo no es una imagen',
+      });
 
       inputRef.value = null;
       this.icon_previsualize = this.default_icon;
       this.icon = null;
-
-
       return;
     }
 
     this.icon = file; // guardamos para enviar al backend
 
-    // Previsualización del SVG
+    // Previsualización
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onloadend = () => this.icon_previsualize = reader.result;
+
     this.isLoadingView();
   }
+
+removeImage(inputRef?: HTMLInputElement) {
+  this.file_image = null;
+  this.image_previsualize = "/assets/media/svg/files/blank-image.svg"; // default
+  if (inputRef) inputRef.value = '';
+}
+
+removeIcon(inputRef?: HTMLInputElement) {
+  this.icon = null;
+  this.icon_previsualize = this.default_icon;
+
+  if (inputRef) {
+    inputRef.value = ''; // limpia el input file
+  }
+}
 
 
 
@@ -109,24 +133,42 @@ export class CreateCategorieComponent {
 
 
   changeTypeCategorie(val: number) {
-    this.type_categorie = val
+    this.type_categorie = val;
+    this.categorie_third_id = '';
+    this.categorie_second_id = '';
   }
+
+changeDepartament(){
+  this.categories_seconds_backsups = this.categories_seconds.filter((item:any) => item.categorie_second_id == this.categorie_third_id)
+  // console.log(this.categories_seconds_backups,)
+}
 
 
   save() {
     if (!this.name || !this.position) {
-      this.toastr.error("Los campos con * son obligatorios");
+      Swal.fire({
+        icon: 'error',
+        title: 'Campos obligatorios',
+        text: 'Los campos con * son obligatorios',
+      });
       return;
     }
 
     if (this.type_categorie == 2 && !this.categorie_second_id) {
-      this.toastr.error("El departamento es obligatorio");
+      Swal.fire({
+        icon: 'error',
+        title: 'Departamento obligatorio',
+        text: 'Debes seleccionar un departamento',
+      });
       return;
     }
 
     if (this.type_categorie == 3 && (!this.categorie_second_id || !this.categorie_third_id)) {
-      this.toastr.error("El departamento y la categoría son obligatorios");
-      return;
+      Swal.fire({
+        icon: 'error',
+        title: 'Campos obligatorios',
+        text: 'El departamento y la categoría son obligatorios',
+      });
     }
 
 
@@ -154,7 +196,11 @@ export class CreateCategorieComponent {
     this.categorieService.createCategories(formData).subscribe({
       next: (res: any) => {
         if (res.mesagge === 200) {
-          this.toastr.success("Categoría creada con éxito");
+          Swal.fire({
+            icon: 'success',
+            title: 'Éxito',
+            text: 'Categoría creada con éxito',
+          });
           console.log(res);
           this.name = ' ';
           this.position = 1;
@@ -167,14 +213,26 @@ export class CreateCategorieComponent {
           this.icon_previsualize = this.default_icon;
           this.config();
         } else if (res.mesagge === 403) {
-          this.toastr.error("La categoría ya existe");
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'La categoría ya existe',
+          });
         } else {
-          this.toastr.warning("Respuesta inesperada del servidor");
+          Swal.fire({
+            icon: 'warning',
+            title: 'Atención',
+            text: 'Respuesta inesperada del servidor',
+          });
           console.log(res);
         }
       },
       error: (err) => {
-        this.toastr.error("Error al procesar la solicitud");
+        Swal.fire({
+          icon: 'warning',
+          title: 'Atención',
+          text: 'Respuesta inesperada del servidor',
+        });
         console.error(err);
       },
       complete: () => {

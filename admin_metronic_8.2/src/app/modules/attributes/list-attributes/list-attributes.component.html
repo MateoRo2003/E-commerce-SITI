@@ -9,7 +9,7 @@
         <div class="d-flex align-items-center position-relative my-1">
             <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-3 text-gray-500"></i>
             <input type="text" (ngModelChange)="searchTo()" [(ngModel)]="search"
-                class="form-control form-control-solid w-250px ps-5" placeholder="Buscar Categoria">
+                class="form-control form-control-solid w-250px ps-5" placeholder="Buscar Atributos">
             <i *ngIf="isLoading$ | async"
                 class="spinner-border spinner-border-sm text-primary position-absolute end-0 me-3"></i>
         </div>
@@ -116,8 +116,8 @@
                 <!--end::Export-->
 
                 <!--begin::Add user-->
-                <a routerLink="/categories/register" class="btn btn-primary">
-                    <i class="ki-duotone ki-plus fs-2"></i> Añadir Categoria
+                <a href="#" onclick="return false" (click)="openModalCreateAttribute()" class="btn btn-primary">
+                    <i class="ki-duotone ki-plus fs-2"></i> Añadir Atributo
                 </a>
                 <!--end::Add user-->
             </div>
@@ -163,7 +163,7 @@
                                     class="dt-column-order"></span></th>
                             <th class="min-w-125px dt-orderable-asc dt-orderable-desc" data-dt-column="2" rowspan="1"
                                 colspan="1" aria-label="Role: Activate to sort" tabindex="0"><span
-                                    class="dt-column-title" role="button">Icono</span><span
+                                    class="dt-column-title" role="button">Tipo De Atributo</span><span
                                     class="dt-column-order"></span></th>
                             <th class="min-w-125px dt-orderable-asc dt-orderable-desc" data-dt-column="3" rowspan="1"
                                 colspan="1" aria-label="Last login: Activate to sort" tabindex="0"><span
@@ -171,11 +171,11 @@
                                     class="dt-column-order"></span></th>
                             <th class="min-w-125px dt-orderable-asc dt-orderable-desc" data-dt-column="4" rowspan="1"
                                 colspan="1" aria-label="Two-step : Activate to sort" tabindex="0"><span
-                                    class="dt-column-title" role="button">Departamento </span><span
+                                    class="dt-column-title" role="button">N° De Propiedad </span><span
                                     class="dt-column-order"></span></th>
                             <th class="min-w-125px dt-orderable-asc dt-orderable-desc" data-dt-column="5" rowspan="1"
                                 colspan="1" aria-label="Joined Date: Activate to sort" tabindex="0"><span
-                                    class="dt-column-title" role="button">Categoria</span><span
+                                    class="dt-column-title" role="button">Fecha de Creación</span><span
                                     class="dt-column-order"></span></th>
                             <th class="text-end min-w-100px dt-orderable-none" data-dt-column="6" rowspan="1"
                                 colspan="1" aria-label="Actions"><span class="dt-column-title">Acciones</span><span
@@ -183,7 +183,7 @@
                         </tr>
                     </thead>
                     <tbody class="text-gray-600 fw-semibold">
-                        <ng-container *ngFor="let categorie of categories">
+                        <ng-container *ngFor="let attribute of attributes">
                             <tr class="odd">
                                 <!-- <td>
                                    <div class="form-check form-check-sm form-check-custom form-check-solid">
@@ -191,61 +191,47 @@
                                    </div>
                                </td> -->
                                 <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="symbol symbol-50px me-5" *ngIf="categorie.image">
-                                            <span class="symbol-label"
-                                                [ngStyle]="{'background-image': 'url(' + categorie.image + ')'}">
-                                            </span>
-                                        </div>
-
-                                        <div class="d-flex justify-content-start flex-column">
-                                            <span class="text-gray-900 fw-bold mb-1 fs-6">
-                                                {{categorie.name}}
-                                            </span>
-                                        </div>
-                                    </div>
+                                    <span>{{attribute.name}}</span>
 
                                 </td>
                                 <td>
-                                    <div class="symbol symbol-100px me-5" *ngIf="categorie.icon">
-                                        <span class="symbol-label"
-                                            [ngStyle]="{'background-image': 'url(' + categorie.icon + ')', 'background-size': 'contain', 'background-repeat': 'no-repeat', 'background-position': 'center'}">
-                                        </span>
-                                    </div>
+                                    <span>{{getNameAttribute(attribute.type_attribute)}}</span>
 
 
                                 </td>
                                 <td>
                                     <span class="badge badge-light-primary fs-7 fw-bold"
-                                        *ngIf="categorie.status == 1">Activo</span>
+                                        *ngIf="attribute.status == 1">Activo</span>
                                     <span class="badge badge-light-danger fs-7 fw-bold"
-                                        *ngIf="categorie.status == 2">Inactivo</span>
+                                        *ngIf="attribute.status == 2">Inactivo</span>
                                 </td>
                                 <td>
-                                    <span *ngIf="categorie.categorie_second">
-                                        {{categorie.categorie_second.name}}
+                                    <span>
+                                        {{attribute.num_properties}}
                                     </span>
 
                                 </td>
                                 <td>
-                                    <span *ngIf="categorie.categorie_third">
-                                        {{categorie.categorie_third.name}}
+                                    <span>
+                                        {{attribute.created_at}}
                                     </span>
                                 </td>
                                 <td class="text-end">
 
-                                    <a [routerLink]="'/categories/list/edit/'+categorie.id" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
+                                    <a href="#" onclick="return false"  (click)="openModalEditAttribute(attribute)"
+                                        class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
                                         <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span
                                                 class="path2"></span></i> </a>
 
-                                    <a href="#" onclick="return false"  (click)="deleteCategorie(categorie)" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm">
+                                    <a href="#" onclick="return false" (click)="deleteAttribute(attribute)"
+                                        class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm">
                                         <i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span
                                                 class="path2"></span><span class="path3"></span><span
                                                 class="path4"></span><span class="path5"></span></i> </a>
                                 </td>
 
                             </tr>
-                        </ng-container> 
+                        </ng-container>
                     </tbody>
                     <tfoot></tfoot>
                 </table>

@@ -12,7 +12,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbModalModule, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { InlineSVGModule } from 'ng-inline-svg-2';
 import { ClipboardModule } from "ngx-clipboard";
-
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 
 @NgModule({
   declarations: [
@@ -31,7 +31,8 @@ import { ClipboardModule } from "ngx-clipboard";
     ReactiveFormsModule,
     InlineSVGModule,
     NgbModalModule,
-    ClipboardModule
+    ClipboardModule,
+    
 ]
 })
 export class CategoriesModule { }
