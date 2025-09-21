@@ -17,6 +17,8 @@ export class EditCategorieComponent {
   categorie_second_id: string = '';
   categorie_third_id: string = '';
   status: string = '1';
+  icon_removed = false;
+  image_removed = false;
 
   image_previsualize: any = "/assets/media/svg/files/blank-image.svg";
   file_image: any = null;
@@ -28,7 +30,7 @@ export class EditCategorieComponent {
   categories_seconds: any = [];
   CATEGORIE_ID: string = '';
   CATEGORIE: any = null;
-    categories_seconds_backsups: any = [];
+  categories_seconds_backsups: any = [];
   // categories_seconds_backups:any = [];
   constructor(
     public categorieService: CategoriesService,
@@ -66,6 +68,10 @@ export class EditCategorieComponent {
         : this.default_icon;
 
       this.status = resp.categorie.status;
+      if (this.type_categorie == 3 && this.categorie_third_id) {
+        this.changeDepartament();
+        this.categorie_second_id = resp.categorie.categorie_second_id;
+      }
     });
   }
 
@@ -83,19 +89,18 @@ export class EditCategorieComponent {
   //   this.categories_seconds_backups = this.categories_seconds.filter((item:any) => item.categorie_second_id == this.categorie_third_id)
   //   // console.log(this.categories_seconds_backups,)
   // }
-  removeImage(inputRef?: HTMLInputElement) {
-    this.file_image = null;
-    this.image_previsualize = "/assets/media/svg/files/blank-image.svg"; // default
-    if (inputRef) inputRef.value = '';
-  }
-
   removeIcon(inputRef?: HTMLInputElement) {
     this.icon = null;
     this.icon_previsualize = this.default_icon;
+    this.icon_removed = true; // 🔹 marca que el usuario eliminó el icono
+    if (inputRef) inputRef.value = '';
+  }
 
-    if (inputRef) {
-      inputRef.value = ''; // limpia el input file
-    }
+  removeImage(inputRef?: HTMLInputElement) {
+    this.file_image = null;
+    this.image_previsualize = this.default_icon;
+    this.image_removed = true; // 🔹 marca que el usuario eliminó la imagen
+    if (inputRef) inputRef.value = '';
   }
 
   processFile($event: any, inputRef: any) {
@@ -167,9 +172,16 @@ export class EditCategorieComponent {
   }
 
   changeDepartament() {
-    this.categories_seconds_backsups = this.categories_seconds.filter((item: any) => item.categorie_second_id == this.categorie_third_id)
-    // console.log(this.categories_seconds_backups,)
+    // Filtrar categorías (segundo nivel) según el departamento seleccionado (primer nivel)
+    this.categories_seconds_backsups = this.categories_seconds.filter(
+      (item: any) => item.categorie_second_id == this.categorie_third_id
+    );
+
+    // Resetear la categoría de segundo nivel al cambiar de departamento
+    this.categorie_second_id = '';
   }
+
+
 
 
   save() {
@@ -197,37 +209,30 @@ export class EditCategorieComponent {
         title: 'Campos obligatorios',
         text: 'El departamento y la categoría son obligatorios',
       });
+      return;
     }
-
 
     let formData = new FormData();
     formData.append('type_categorie', this.type_categorie.toString());
     formData.append('name', this.name);
     formData.append('position', this.position.toString());
-
-    if (this.categorie_second_id) {
-      formData.append('categorie_second_id', this.categorie_second_id);
-    }
-    if (this.categorie_third_id) {
-      formData.append('categorie_third_id', this.categorie_third_id);
-    }
-    if (this.icon) {
-      formData.append('icon', this.icon);
-    } else {
-      if (this.CATEGORIE.icon) {
-        formData.append('icon', '');
-      }
-    }
-    if (this.file_image) {
-      formData.append('image', this.file_image);
-    } else {
-      if (this.CATEGORIE.image) {
-        formData.append('image', '');
-      }
-    }
     formData.append('status', this.status);
 
-    // 🚀 Activo spinner antes de la petición
+    if (this.categorie_second_id) formData.append('categorie_second_id', this.categorie_second_id);
+    if (this.categorie_third_id) formData.append('categorie_third_id', this.categorie_third_id);
+
+    if (this.icon) {
+      formData.append('icon', this.icon);
+    } else if (this.icon_removed) {
+      formData.append('icon_delete', 'true'); // 🔹 solo si se eliminó
+    }
+
+    if (this.file_image) {
+      formData.append('image', this.file_image);
+    } else if (this.image_removed) {
+      formData.append('image_delete', 'true'); // 🔹 solo si se eliminó
+    }
+
     this.categorieService.isLoadingSubject.next(true);
 
     this.categorieService.uptdateCategories(this.CATEGORIE_ID, formData).subscribe({
@@ -238,7 +243,6 @@ export class EditCategorieComponent {
             title: 'Éxito',
             text: 'Categoría actualizada con éxito',
           });
-          console.log(res);
           this.config();
         } else if (res.mesagge === 403) {
           Swal.fire({
@@ -252,7 +256,6 @@ export class EditCategorieComponent {
             title: 'Atención',
             text: 'Respuesta inesperada del servidor',
           });
-          console.log(res);
         }
       },
       error: (err) => {
@@ -263,14 +266,8 @@ export class EditCategorieComponent {
         });
         console.error(err);
       },
-      complete: () => {
-        this.categorieService.isLoadingSubject.next(false);
-      }
+      complete: () => this.categorieService.isLoadingSubject.next(false)
     });
-
-
-
-
-
   }
+
 }

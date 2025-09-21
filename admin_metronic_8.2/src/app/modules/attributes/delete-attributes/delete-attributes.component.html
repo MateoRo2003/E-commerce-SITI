@@ -1,1 +1,27 @@
-<p>delete-attributes works!</p>
+<div class="modal-content p-0 rounded shadow-sm border-0">
+  <div class="modal-header border-0 pb-0">
+    <h2 class="fw-bold fs-4 text-dark">Eliminar Atributo: "{{ attribute.name }}"</h2>
+    <button type="button" class="btn btn-icon btn-sm btn-light btn-hover-primary" (click)="modal.dismiss()">
+      <span class="svg-icon svg-icon-1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="currentColor"/>
+          <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="currentColor"/>
+        </svg>
+      </span>
+    </button>
+  </div>
+
+  <div class="modal-body px-5 py-7">
+    <p class="text-center text-muted fs-6">
+      {{ deleteMessage }}
+    </p>
+    <div class="d-flex justify-content-center gap-3 mt-5">
+      <button type="button" class="btn btn-light fw-semibold" (click)="modal.dismiss()">Cancelar</button>
+      <button type="button" (click)="delete()" class="btn btn-danger fw-semibold position-relative">
+        Eliminar
+        <span class="spinner-border spinner-border-sm position-absolute top-50 start-100 translate-middle ms-2" 
+              *ngIf="isLoading | async"></span>
+      </button>
+    </div>
+  </div>
+</div>

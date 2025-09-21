@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\Product\CategorieController;
+use App\Http\Controllers\admin\Product\AttributeProductController;
+use App\Http\Controllers\Admin\SliderController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -40,4 +42,12 @@ Route::group([
     Route::get("categories/config", [CategorieController::class, "config"]);
     Route::resource("categories", CategorieController::class);
     Route::post("categories/{id}", [CategorieController::class, "update"]);
+
+    Route::post("properties", [AttributeProductController::class, "store_properties"]);
+    Route::delete("properties/{id}", [AttributeProductController::class, "destroy_properties"]);
+    Route::resource("attributes", AttributeProductController::class);
+
+
+     Route::resource("sliders", SliderController::class);
+      Route::post("sliders/{id}", [SliderController::class, "update"]);
 });

@@ -12,7 +12,7 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^16.2.8",
+    "@angular/animations": "^16.2.12",
     "@angular/common": "^16.2.8",
     "@angular/compiler": "^16.0.2",
     "@angular/core": "^16.2.8",
@@ -48,6 +48,9 @@
     "ngx-toastr": "^18.0.0",
     "nouislider": "^15.7.0",
     "object-path": "0.11.8",
+    "primeflex": "^4.0.0",
+    "primeicons": "^6.0.1",
+    "primeng": "^16.9.1",
     "prism-themes": "1.9.0",
     "prismjs": "^1.29.0",
     "rxjs": "~7.8.0",

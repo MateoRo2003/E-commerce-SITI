@@ -209,7 +209,7 @@ changeDepartament(){
           this.icon = null;
           this.type_categorie = 1;
           this.file_image = null;
-          this.image_previsualize = "assets/media/svg/illustrations/easy/2.svg";
+          this.image_previsualize = "/assets/media/svg/files/blank-image.svg";
           this.icon_previsualize = this.default_icon;
           this.config();
         } else if (res.mesagge === 403) {

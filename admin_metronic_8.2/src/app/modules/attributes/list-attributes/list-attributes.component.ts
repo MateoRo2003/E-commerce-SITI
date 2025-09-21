@@ -5,6 +5,8 @@ import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { CreateAttributesComponent } from '../create-attributes/create-attributes.component';
+import { EditAttributesComponent } from '../edit-attributes/edit-attributes.component';
+import { SubAttributeCreateComponent } from '../sub-attribute-create/sub-attribute-create.component';
 
 
 @Component({
@@ -24,11 +26,11 @@ export class ListAttributesComponent {
   constructor(
     public attributesService: AttributesService,
     public modalService: NgbModal,
-    
+
   ) { }
 
   ngOnInit(): void {
-    // this.listAttributes();  // Cargar todas al inicio
+    this.listAttributes();  // Cargar todas al inicio
     this.isLoading$ = this.attributesService.isLoading$;
 
     // Configurar debounce para búsqueda en tiempo real
@@ -47,11 +49,8 @@ export class ListAttributesComponent {
 
   openModalCreateAttribute() {
     const modalRef = this.modalService.open(CreateAttributesComponent, { centered: true, size: 'md' });
-    modalRef.componentInstance.name = 'world';
-    modalRef.result.then((result) => {
-      console.log(result);
-    }).catch((error) => {
-      console.log(error);
+    modalRef.componentInstance.AttributeC.subscribe((attributes: any) => {
+      this.attributes.unshift(attributes); // Agregar el nuevo atributo al principio();
     });
   }
 
@@ -73,18 +72,28 @@ export class ListAttributesComponent {
       default:
         break;
     }
+    return name_attribute;
   }
 
 
 
-  openModalEditAttribute(attribute:any){
+  openModalEditAttribute(attribute: any) {
+    const modalRef = this.modalService.open(EditAttributesComponent, { centered: true, size: 'md' });
+    modalRef.componentInstance.attribute = attribute;
 
+    modalRef.componentInstance.AttributeE.subscribe((attributes: any) => {
+      // this.attributes.unshift(attributes); // Agregar el nuevo atributo al principio();
+      let INDEX = this.attributes.findIndex((item: any) => item.id == attributes.id);
+      if (INDEX != -1) {
+        this.attributes[INDEX] = attributes;
+      }
+    });
   }
 
   listAttributes(page = 1) {
     this.attributesService.listAttributes(page, this.search).subscribe((resp: any) => {
       console.log(resp);
-      this.attributes = resp.Attribute.data;
+      this.attributes = resp.attributes;
       this.totalPages = resp.total;
       this.currentPage = page;
     })
@@ -102,13 +111,22 @@ export class ListAttributesComponent {
 
   deleteAttribute(attribute: any) {
     const modalRef = this.modalService.open(DeleteAttributesComponent, { centered: true, size: 'md' });
-    modalRef.componentInstance.categorie = attribute;
-    // modalRef.componentInstance.CategorieD.subscribe((resp: any) => {
-    //   console.log(resp);
-    //   let INDEX = this.categories.findIndex((item: any) => item.id == categorie.id);
-    //   if (INDEX != -1) {
-    //     this.categories.splice(INDEX, 1);
-    //   }
-    // })
+    modalRef.componentInstance.attribute = attribute;
+
+    // Suscribirse al evento del modal cuando confirme eliminación
+    modalRef.componentInstance.AttributeD.subscribe((attribute: any) => {
+      let INDEX = this.attributes.findIndex((item: any) => item.id == attribute.id);
+      if (INDEX != -1) {
+        this.attributes.splice(INDEX, 1);
+      }
+    });
   }
+
+
+openModalRegisterProperties(attribute: any) {
+  const modalRef = this.modalService.open(SubAttributeCreateComponent, { centered: true, size: 'md' });
+  modalRef.componentInstance.attribute = attribute;
 }
+
+}
+

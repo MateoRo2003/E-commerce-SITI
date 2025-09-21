@@ -100,58 +100,83 @@ class CategorieController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+   public function update(Request $request, string $id)
 {
-    // Verifica si ya existe una categoría con el mismo nombre
+    $categorie = Categorie::findOrFail($id);
+
+    // Evitar duplicados
     $is_exists = Categorie::where("id", '<>', $id)
         ->where("name", $request->name)
         ->first();
 
     if ($is_exists) {
-        // Retorna error si la categoría ya existe
         return response()->json(["mesagge" => 403]);
     }
 
-    $categorie = Categorie::findOrFail($id);
-    $data = $request->all();
+    // Campos básicos a actualizar
+    $data = [
+        'name' => $request->name,
+        'type_categorie' => $request->type_categorie,
+        'position' => $request->position,
+        'status' => $request->status,
+        'categorie_second_id' => filter_var($request->categorie_second_id, FILTER_VALIDATE_INT) ?: null,
+        'categorie_third_id' => filter_var($request->categorie_third_id, FILTER_VALIDATE_INT) ?: null,
+    ];
 
     // Procesar icono
     if ($request->hasFile("icon")) {
         $file = $request->file("icon");
-
-        // Validar que sea cualquier tipo de imagen
         if (!str_starts_with($file->getClientMimeType(), 'image/')) {
-            return response()->json([
-                "message" => "El icono debe ser un archivo de imagen válido"
-            ], 422);
+            return response()->json(["message" => "El icono debe ser un archivo de imagen válido"], 422);
         }
-
-        // Borrar icono anterior si existe
-        if ($categorie->icon) {
-            Storage::delete($categorie->icon);
-        }
-
-        // Guardar nuevo
+        if ($categorie->icon) Storage::delete($categorie->icon);
         $data["icon"] = Storage::putFile("categories/icons", $file);
+    } elseif ($request->icon_delete) {
+        if ($categorie->icon) Storage::delete($categorie->icon);
+        $data["icon"] = null;
     }
 
     // Procesar imagen
     if ($request->hasFile("image")) {
-        // Borrar imagen anterior si existe
-        if ($categorie->image) {
-            Storage::delete($categorie->image);
+        $file = $request->file("image");
+        if (!str_starts_with($file->getClientMimeType(), 'image/')) {
+            return response()->json(["message" => "La imagen debe ser un archivo de imagen válido"], 422);
         }
-
-        // Guardar nueva
-        $data["image"] = Storage::putFile("categories", $request->file("image"));
+        if ($categorie->image) Storage::delete($categorie->image);
+        $data["image"] = Storage::putFile("categories", $file);
+    } elseif ($request->image_delete) {
+        if ($categorie->image) Storage::delete($categorie->image);
+        $data["image"] = null;
     }
 
-    // Actualizar con los datos
+    // Actualizar la categoría principal
     $categorie->update($data);
 
-    // Retorna mensaje de éxito
+    // 🔹 Función recursiva para actualizar estado de todos los hijos
+    $this->updateChildStatus($categorie->id, $request->status);
+
     return response()->json(["mesagge" => 200]);
 }
+
+/**
+ * Actualiza recursivamente el status de todos los hijos de una categoría
+ */
+private function updateChildStatus($parentId, $status)
+{
+    $children = Categorie::where('categorie_second_id', $parentId)
+        ->orWhere('categorie_third_id', $parentId)
+        ->get();
+
+    foreach ($children as $child) {
+        $child->update(['status' => $status]);
+        // Llamada recursiva para nietos
+        $this->updateChildStatus($child->id, $status);
+    }
+}
+
+
+
+
 
 
     /**

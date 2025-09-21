@@ -1,0 +1,177 @@
+<div class="card shadow-sm border-0 rounded-3">
+    <!-- Loading -->
+    <div class="loading-overlay" *ngIf="isLoading$ | async">
+        <div class="spinner-border text-light" role="status"></div>
+        <div class="loading-text">Cargando...</div>
+    </div>
+
+    <div class="card-body p-5">
+        <!-- Título -->
+        <div class="text-center mb-5">
+            <h2 class="fw-bold mb-2">Crear Slider</h2>
+            <p class="text-muted">Completa los siguientes campos para crear un nuevo slider</p>
+        </div>
+
+        <!-- SLIDER: arriba -->
+        <!-- SLIDER: arriba -->
+        <div class="slider-preview position-relative d-flex align-items-center p-5" [style.background]="getBackground()"
+            style="min-height: 400px; border-radius: 12px; overflow: hidden; width: 100%;">
+
+            <!-- Shapes decorativos (entre fondo y contenido) -->
+            <div class="tp-slider-shape position-absolute w-100 h-100"
+                style="top:0; left:0; z-index:1; pointer-events:none;">
+                <img class="tp-slider-shape-1" src="assets/media/slider/shapes/slider-shape-1.png" alt="slider-shape">
+                <img class="tp-slider-shape-2" src="assets/media/slider/shapes/slider-shape-2.png" alt="slider-shape">
+                <img class="tp-slider-shape-3" src="assets/media/slider/shapes/slider-shape-3.png" alt="slider-shape">
+                <img class="tp-slider-shape-4" src="assets/media/slider/shapes/slider-shape-4.png" alt="slider-shape">
+            </div>
+
+            <!-- Texto -->
+            <div class="text-content col-md-6 pl-6" style="z-index:2; position: relative;">
+                <p class="mb-2 fs-6" [style.color]="isColorDark(getMainColor()) ? '#fff' : '#000'">
+                    {{ label || 'Texto descriptivo pequeño' }}
+                </p>
+
+                <h1 class="fw-bold mb-3 slider-title" [style.color]="isColorDark(getMainColor()) ? '#fff' : '#000'">
+                    {{ title || 'Las mejores notebooks del mercado' }}
+                </h1>
+
+
+                <p class="fs-5 mb-4" [style.color]="isColorDark(getMainColor()) ? '#fff' : '#000'">
+                    {{ subtitle || 'Oferta exclusiva -35% esta semana' }}
+                </p>
+
+                <a *ngIf="link" [href]="link" target="_blank" class="btn btn-lg fw-bold px-4 py-2"
+                    [ngClass]="isColorDark(getMainColor()) ? 'btn-light' : 'btn-dark'">
+                    Compra Ya
+                </a>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-content col-md-6 text-center" style="z-index:2; position: relative;">
+                <img *ngIf="image_previsualize" [src]="image_previsualize" alt="Preview" class="img-fluid"
+                    style="max-height: 300px; object-fit: contain;">
+            </div>
+        </div>
+
+
+
+
+        <!-- FORMULARIO: abajo y centrado -->
+        <div class="d-flex justify-content-center mt-10">
+            <div class="col-md-6">
+                <div class="row g-4">
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Título <span class="text-danger">*</span></label>
+                        <input type="text" name="title" [(ngModel)]="title" class="form-control form-control-lg"
+                            placeholder="Ejemplo: Las mejores notebooks">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Subtítulo <span class="text-danger">*</span></label>
+                        <input type="text" name="subtitle" [(ngModel)]="subtitle" class="form-control form-control-lg"
+                            placeholder="Ejemplo: Oferta del día">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Descripción pequeña <small
+                                class="text-muted">(opcional)</small></label>
+                        <input type="text" name="label" [(ngModel)]="label" class="form-control form-control-lg"
+                            placeholder="Ejemplo: Hasta 20% de descuento">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Link del botón <small
+                                class="text-muted">(opcional)</small></label>
+                        <input type="text" name="link" [(ngModel)]="link" class="form-control form-control-lg"
+                            placeholder="Ejemplo: https://tusitio.com">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Tipo de fondo <span class="text-danger">*</span></label>
+                        <select class="form-select" [(ngModel)]="colorType" name="colorType" required>
+                            <option value="solid">Color Sólido</option>
+                            <option value="gradient">Degradado</option>
+                        </select>
+                    </div>
+
+                    <!-- Color Sólido -->
+                    <div class="col-12 mt-3" *ngIf="colorType === 'solid'">
+                        <label class="form-label fw-semibold">Color de fondo <span class="text-danger">*</span></label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="color" [(ngModel)]="color" name="color" class="form-control form-control-color"
+                                style="width: 100px; height: 48px;" required />
+                            <input type="text" [(ngModel)]="color" class="form-control" placeholder="#7cafde"
+                                pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$" (input)="onColorChange($event)" required />
+                        </div>
+                    </div>
+
+                    <!-- Degradado -->
+                    <div class="row g-3 mt-3" *ngIf="colorType === 'gradient'">
+
+                        <!-- Color Inicio -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Color Inicio <span
+                                    class="text-danger">*</span></label>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="color" [(ngModel)]="gradient.start" name="gradientStart"
+                                    class="form-control form-control-color w-100 h-45px" required />
+
+                            </div>
+                            <input type="text" [(ngModel)]="gradient.start" class="form-control" placeholder="#7cafde"
+                                pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$" (input)="onGradientChange('start', $event)"
+                                required />
+                        </div>
+
+                        <!-- Color Fin -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Color Fin <span class="text-danger">*</span></label>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="color" [(ngModel)]="gradient.end" name="gradientEnd"
+                                    class="form-control form-control-color w-100 h-45px" required />
+
+                            </div>
+                            <input type="text" [(ngModel)]="gradient.end" class="form-control" placeholder="#0e5c6b"
+                                pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$" (input)="onGradientChange('end', $event)"
+                                required />
+                        </div>
+
+                        <!-- Dirección -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Dirección</label>
+                            <select [(ngModel)]="gradient.direction" name="gradientDirection" class="form-select">
+                                <option value="to right">Horizontal</option>
+                                <option value="to bottom">Vertical</option>
+                                <option value="circle">Radial</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">
+                            Imagen del slider
+                            <small class="text-muted">(Se recomienda PNG con fondo transparente)</small>
+                        </label>
+                        <input type="file" #imageInput class="form-control form-control-lg" accept=".png"
+                            (change)="processFile($event, imageInput)">
+                    </div>
+
+
+                    <div class="col-12 text-center mt-3">
+                        <button type="submit" (click)="save()" class="btn btn-primary btn-lg px-5">
+                            <span class="indicator-label">Guardar cambios</span>
+                            <span class="indicator-progress">
+                                Espere por favor...
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
