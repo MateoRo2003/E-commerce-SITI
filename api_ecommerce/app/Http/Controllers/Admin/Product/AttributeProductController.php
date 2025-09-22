@@ -76,7 +76,6 @@ class AttributeProductController extends Controller
             ]
         ]);
     }
-
     public function store_properties(Request $request)
     {
         $isValida = Propertie::where("name", $request->name)
@@ -99,7 +98,46 @@ class AttributeProductController extends Controller
                 ], 422);
             }
 
-            $data['code'] = Storage::putFile('properties/images', $file);
+            // Detectar tipo de imagen y crear recurso GD
+            $imageInfo = getimagesize($file);
+            $imageType = $imageInfo[2];
+            switch ($imageType) {
+                case IMAGETYPE_JPEG:
+                    $img = imagecreatefromjpeg($file);
+                    break;
+                case IMAGETYPE_PNG:
+                    $img = imagecreatefrompng($file);
+                    break;
+                case IMAGETYPE_GIF:
+                    $img = imagecreatefromgif($file);
+                    break;
+                default:
+                    return response()->json(["message" => "Tipo de imagen no soportado"], 422);
+            }
+
+            // Crear imagen true color con transparencia si aplica
+            $trueColorImg = imagecreatetruecolor(imagesx($img), imagesy($img));
+            imagealphablending($trueColorImg, false);
+            imagesavealpha($trueColorImg, true);
+            $transparent = imagecolorallocatealpha($trueColorImg, 0, 0, 0, 127);
+            imagefill($trueColorImg, 0, 0, $transparent);
+            imagecopy($trueColorImg, $img, 0, 0, 0, 0, imagesx($img), imagesy($img));
+            imagedestroy($img);
+            $img = $trueColorImg;
+
+            // Guardar como WebP
+            $filename = uniqid('property_') . '.webp';
+            $path = 'properties/images/' . $filename;
+            $fullPath = storage_path('app/public/' . $path);
+
+            if (!file_exists(dirname($fullPath))) {
+                mkdir(dirname($fullPath), 0755, true);
+            }
+
+            imagewebp($img, $fullPath, 80);
+            imagedestroy($img);
+
+            $data['code'] = $path;
         }
 
         $propertie = Propertie::create($data);
@@ -115,9 +153,9 @@ class AttributeProductController extends Controller
                 "status" => $propertie->status,
                 "created_at" => $propertie->created_at->format("Y-m-d H:i:s"),
             ]
-
         ]);
     }
+
 
     public function destroy_properties($id)
     {

@@ -44,38 +44,140 @@ class SliderController extends Controller
     {
         $data = $request->all();
 
-        // Validar que se haya subido una imagen
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
-
-            // Validar que sea una imagen
-            if (!str_starts_with($file->getClientMimeType(), 'image/')) {
-                return response()->json([
-                    "message" => "La imagen del slider debe ser un archivo de imagen válido"
-                ], 422);
-            }
-
-            // Guardar la imagen en la carpeta 'sliders' (dentro de storage/app)
-            $data['image'] = Storage::putFile('sliders', $file);
-        } else {
+        if (!$request->hasFile('image')) {
             return response()->json([
                 "message" => "La imagen del slider es obligatoria"
             ], 422);
         }
 
-        // Crear el slider en la BD
+        $file = $request->file('image');
+        if (!str_starts_with($file->getClientMimeType(), 'image/')) {
+            return response()->json([
+                "message" => "La imagen del slider debe ser un archivo de imagen válido"
+            ], 422);
+        }
+
+        // Detectar tipo de imagen y crear recurso GD
+        $imageInfo = getimagesize($file);
+        $imageType = $imageInfo[2];
+        switch ($imageType) {
+            case IMAGETYPE_JPEG:
+                $img = imagecreatefromjpeg($file);
+                break;
+            case IMAGETYPE_PNG:
+                $img = imagecreatefrompng($file);
+                break;
+            case IMAGETYPE_GIF:
+                $img = imagecreatefromgif($file);
+                break;
+            default:
+                return response()->json(["message" => "Tipo de imagen no soportado"], 422);
+        }
+
+        // Crear imagen true color con transparencia si aplica
+        $trueColorImg = imagecreatetruecolor(imagesx($img), imagesy($img));
+        imagealphablending($trueColorImg, false);
+        imagesavealpha($trueColorImg, true);
+        $transparent = imagecolorallocatealpha($trueColorImg, 0, 0, 0, 127);
+        imagefill($trueColorImg, 0, 0, $transparent);
+        imagecopy($trueColorImg, $img, 0, 0, 0, 0, imagesx($img), imagesy($img));
+        imagedestroy($img);
+        $img = $trueColorImg;
+
+        // Guardar WebP
+        $filename = uniqid('slider_') . '.webp';
+        $path = 'sliders/' . $filename;
+        $fullPath = storage_path('app/public/' . $path);
+
+        if (!file_exists(dirname($fullPath))) {
+            mkdir(dirname($fullPath), 0755, true);
+        }
+
+        imagewebp($img, $fullPath, 80);
+        imagedestroy($img);
+
+        $data['image'] = $path;
+
+        // Eliminar imagen anterior si existe
+        if (isset($data['old_image']) && Storage::exists($data['old_image'])) {
+            Storage::delete($data['old_image']);
+        }
+
         $slider = Slider::create($data);
 
-        // Retorna mensaje de éxito
         return response()->json([
             "message" => 200,
             "slider" => $slider
         ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    public function update(Request $request, string $id)
+    {
+        $slider = Slider::findOrFail($id);
+        $data = $request->all();
+
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            if (!str_starts_with($file->getClientMimeType(), 'image/')) {
+                return response()->json([
+                    "message" => "La imagen del slider debe ser un archivo de imagen válido"
+                ], 422);
+            }
+
+            // Eliminar imagen anterior si existe
+            if ($slider->image && Storage::exists('public/' . $slider->image)) {
+                Storage::delete('public/' . $slider->image);
+            }
+
+            // Detectar tipo de imagen y crear recurso GD
+            $imageInfo = getimagesize($file);
+            $imageType = $imageInfo[2];
+            switch ($imageType) {
+                case IMAGETYPE_JPEG:
+                    $img = imagecreatefromjpeg($file);
+                    break;
+                case IMAGETYPE_PNG:
+                    $img = imagecreatefrompng($file);
+                    break;
+                case IMAGETYPE_GIF:
+                    $img = imagecreatefromgif($file);
+                    break;
+                default:
+                    return response()->json(["message" => "Tipo de imagen no soportado"], 422);
+            }
+
+            // Crear imagen true color con transparencia si aplica
+            $trueColorImg = imagecreatetruecolor(imagesx($img), imagesy($img));
+            imagealphablending($trueColorImg, false);
+            imagesavealpha($trueColorImg, true);
+            $transparent = imagecolorallocatealpha($trueColorImg, 0, 0, 0, 127);
+            imagefill($trueColorImg, 0, 0, $transparent);
+            imagecopy($trueColorImg, $img, 0, 0, 0, 0, imagesx($img), imagesy($img));
+            imagedestroy($img);
+            $img = $trueColorImg;
+
+            // Guardar como WebP
+            $filename = uniqid('slider_') . '.webp';
+            $path = 'sliders/' . $filename;
+            $fullPath = storage_path('app/public/' . $path);
+
+            if (!file_exists(dirname($fullPath))) {
+                mkdir(dirname($fullPath), 0755, true);
+            }
+
+            imagewebp($img, $fullPath, 80);
+            imagedestroy($img);
+
+            $data['image'] = $path;
+        }
+
+        $slider->update($data);
+
+        return response()->json([
+            "message" => 200,
+            "slider" => $slider
+        ]);
+    }
     public function show(string $id)
     {
         $slider = Slider::findorFail($id);
@@ -96,23 +198,6 @@ class SliderController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        $slider = Slider::findOrFail($id);
-        if ($slider->image != null) {
-            Storage::delete($slider->image);
-        }
-
-        $path = Storage::putFile('slider', $request->file('image'));
-        $request->request->add(['image' => $path]);
-
-        $slider->update($request->all());
-        // Retorna mensaje de éxito
-        return response()->json([
-            "message" => 200,
-            "slider" => $slider
-        ]);
-    }
 
     /**
      * Remove the specified resource from storage.

@@ -53,44 +53,147 @@ class CategorieController extends Controller
      */
     public function store(Request $request)
     {
-        // Verifica si ya existe una categoría con el mismo nombre
         $is_exists = Categorie::where("name", $request->name)->first();
-
         if ($is_exists) {
-            // Retorna error si la categoría ya existe
             return response()->json(["mesagge" => 403]);
         }
 
         $data = $request->all();
 
+        // Manejo de icono
         if ($request->hasFile('icon')) {
             $file = $request->file('icon');
+            $mime = $file->getClientMimeType();
 
-            // Validar que sea cualquier tipo de imagen
-            if (!str_starts_with($file->getClientMimeType(), 'image/')) {
+            if (!str_starts_with($mime, 'image/')) {
                 return response()->json([
                     "message" => "El icono debe ser un archivo de imagen válido"
                 ], 422);
             }
 
-            // Guardar el archivo
-            $data['icon'] = Storage::putFile('categories/icons', $file);
+            // SVG se guarda tal cual
+            if ($mime === 'image/svg+xml') {
+                $data['icon'] = Storage::putFile('categories/icons', $file);
+            } else {
+                $data['icon'] = $this->convertImageToWebP($file, 'categories/icons', 'icon_');
+            }
         }
 
-
+        // Manejo de imagen
         if ($request->hasFile('image')) {
-            $data['image'] = Storage::putFile('categories', $request->file('image'));
+            $file = $request->file('image');
+            $data['image'] = $this->convertImageToWebP($file, 'categories', 'category_');
         }
 
         $categorie = Categorie::create($data);
 
-        // Retorna mensaje de éxito
+        return response()->json(["mesagge" => 200, "categorie" => $categorie]);
+    }
+
+    public function update(Request $request, string $id)
+    {
+        $categorie = Categorie::findOrFail($id);
+
+        $is_exists = Categorie::where("id", '<>', $id)
+            ->where("name", $request->name)
+            ->first();
+        if ($is_exists) {
+            return response()->json(["mesagge" => 403]);
+        }
+
+        $data = [
+            'name' => $request->name,
+            'type_categorie' => $request->type_categorie,
+            'position' => $request->position,
+            'status' => $request->status,
+            'categorie_second_id' => filter_var($request->categorie_second_id, FILTER_VALIDATE_INT) ?: null,
+            'categorie_third_id' => filter_var($request->categorie_third_id, FILTER_VALIDATE_INT) ?: null,
+        ];
+
+        // Procesar icono
+        if ($request->hasFile("icon")) {
+            $file = $request->file("icon");
+            $mime = $file->getClientMimeType();
+
+            if (!str_starts_with($mime, 'image/')) {
+                return response()->json(["message" => "El icono debe ser un archivo de imagen válido"], 422);
+            }
+
+            if ($categorie->icon) Storage::delete($categorie->icon);
+
+            if ($mime === 'image/svg+xml') {
+                $data["icon"] = Storage::putFile("categories/icons", $file);
+            } else {
+                $data["icon"] = $this->convertImageToWebP($file, 'categories/icons', 'icon_');
+            }
+        } elseif ($request->icon_delete) {
+            if ($categorie->icon) Storage::delete($categorie->icon);
+            $data["icon"] = null;
+        }
+
+        // Procesar imagen
+        if ($request->hasFile("image")) {
+            $file = $request->file("image");
+            if ($categorie->image) Storage::delete($categorie->image);
+            $data["image"] = $this->convertImageToWebP($file, 'categories', 'category_');
+        } elseif ($request->image_delete) {
+            if ($categorie->image) Storage::delete($categorie->image);
+            $data["image"] = null;
+        }
+
+        $categorie->update($data);
+
+        // Actualizar estado de hijos
+        $this->updateChildStatus($categorie->id, $request->status);
+
         return response()->json(["mesagge" => 200]);
     }
 
     /**
-     * Display the specified resource.
+     * Helper para convertir cualquier imagen a WebP manteniendo transparencia
      */
+    private function convertImageToWebP($file, $folder, $prefix = 'img_')
+    {
+        $imageInfo = getimagesize($file);
+        $imageType = $imageInfo[2];
+
+        switch ($imageType) {
+            case IMAGETYPE_JPEG:
+                $img = imagecreatefromjpeg($file);
+                break;
+            case IMAGETYPE_PNG:
+                $img = imagecreatefrompng($file);
+                break;
+            case IMAGETYPE_GIF:
+                $img = imagecreatefromgif($file);
+                break;
+            default:
+                throw new \Exception("Tipo de imagen no soportado");
+        }
+
+        $trueColorImg = imagecreatetruecolor(imagesx($img), imagesy($img));
+        imagealphablending($trueColorImg, false);
+        imagesavealpha($trueColorImg, true);
+        $transparent = imagecolorallocatealpha($trueColorImg, 0, 0, 0, 127);
+        imagefill($trueColorImg, 0, 0, $transparent);
+        imagecopy($trueColorImg, $img, 0, 0, 0, 0, imagesx($img), imagesy($img));
+        imagedestroy($img);
+        $img = $trueColorImg;
+
+        $filename = uniqid($prefix) . '.webp';
+        $path = $folder . '/' . $filename;
+        $fullPath = storage_path('app/public/' . $path);
+
+        if (!file_exists(dirname($fullPath))) {
+            mkdir(dirname($fullPath), 0755, true);
+        }
+
+        imagewebp($img, $fullPath, 80);
+        imagedestroy($img);
+
+        return $path;
+    }
+
     public function show(string $id)
     {
         $categorie = Categorie::findorFail($id);
@@ -100,79 +203,22 @@ class CategorieController extends Controller
     /**
      * Update the specified resource in storage.
      */
-   public function update(Request $request, string $id)
-{
-    $categorie = Categorie::findOrFail($id);
 
-    // Evitar duplicados
-    $is_exists = Categorie::where("id", '<>', $id)
-        ->where("name", $request->name)
-        ->first();
+    /**
+     * Actualiza recursivamente el status de todos los hijos de una categoría
+     */
+    private function updateChildStatus($parentId, $status)
+    {
+        $children = Categorie::where('categorie_second_id', $parentId)
+            ->orWhere('categorie_third_id', $parentId)
+            ->get();
 
-    if ($is_exists) {
-        return response()->json(["mesagge" => 403]);
-    }
-
-    // Campos básicos a actualizar
-    $data = [
-        'name' => $request->name,
-        'type_categorie' => $request->type_categorie,
-        'position' => $request->position,
-        'status' => $request->status,
-        'categorie_second_id' => filter_var($request->categorie_second_id, FILTER_VALIDATE_INT) ?: null,
-        'categorie_third_id' => filter_var($request->categorie_third_id, FILTER_VALIDATE_INT) ?: null,
-    ];
-
-    // Procesar icono
-    if ($request->hasFile("icon")) {
-        $file = $request->file("icon");
-        if (!str_starts_with($file->getClientMimeType(), 'image/')) {
-            return response()->json(["message" => "El icono debe ser un archivo de imagen válido"], 422);
+        foreach ($children as $child) {
+            $child->update(['status' => $status]);
+            // Llamada recursiva para nietos
+            $this->updateChildStatus($child->id, $status);
         }
-        if ($categorie->icon) Storage::delete($categorie->icon);
-        $data["icon"] = Storage::putFile("categories/icons", $file);
-    } elseif ($request->icon_delete) {
-        if ($categorie->icon) Storage::delete($categorie->icon);
-        $data["icon"] = null;
     }
-
-    // Procesar imagen
-    if ($request->hasFile("image")) {
-        $file = $request->file("image");
-        if (!str_starts_with($file->getClientMimeType(), 'image/')) {
-            return response()->json(["message" => "La imagen debe ser un archivo de imagen válido"], 422);
-        }
-        if ($categorie->image) Storage::delete($categorie->image);
-        $data["image"] = Storage::putFile("categories", $file);
-    } elseif ($request->image_delete) {
-        if ($categorie->image) Storage::delete($categorie->image);
-        $data["image"] = null;
-    }
-
-    // Actualizar la categoría principal
-    $categorie->update($data);
-
-    // 🔹 Función recursiva para actualizar estado de todos los hijos
-    $this->updateChildStatus($categorie->id, $request->status);
-
-    return response()->json(["mesagge" => 200]);
-}
-
-/**
- * Actualiza recursivamente el status de todos los hijos de una categoría
- */
-private function updateChildStatus($parentId, $status)
-{
-    $children = Categorie::where('categorie_second_id', $parentId)
-        ->orWhere('categorie_third_id', $parentId)
-        ->get();
-
-    foreach ($children as $child) {
-        $child->update(['status' => $status]);
-        // Llamada recursiva para nietos
-        $this->updateChildStatus($child->id, $status);
-    }
-}
 
 
 

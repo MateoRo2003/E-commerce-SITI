@@ -32,9 +32,6 @@ export class CreateSlidersComponent {
     this.isLoading$ = this.sliderService.isLoading$;
   }
 
-
-
-
   // Retorna el color principal (para decidir si el texto va blanco o negro)
   getMainColor(): string {
     if (this.colorType === 'solid') return this.color;
@@ -45,8 +42,14 @@ export class CreateSlidersComponent {
   // Retorna el background completo según tipo
   getBackground(): string {
     if (this.colorType === 'solid') return this.color;
+
+    if (this.gradient.direction === 'circle') {
+      return `radial-gradient(circle, ${this.gradient.start}, ${this.gradient.end})`;
+    }
+
     return `linear-gradient(${this.gradient.direction}, ${this.gradient.start}, ${this.gradient.end})`;
   }
+
 
 
   processFile($event: any, inputRef: any) {
@@ -82,12 +85,12 @@ export class CreateSlidersComponent {
   }
 
   onGradientChange(position: 'start' | 'end', event: any) {
-  const val = event.target.value;
-  const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-  if (hexRegex.test(val)) {
-    this.gradient[position] = val;
+    const val = event.target.value;
+    const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+    if (hexRegex.test(val)) {
+      this.gradient[position] = val;
+    }
   }
-}
 
 
   removeImage(inputRef?: HTMLInputElement) {
@@ -119,76 +122,76 @@ export class CreateSlidersComponent {
   }
 
 
- save() {
-  // Validar campos obligatorios
-  if (!this.title.trim()) {
-    Swal.fire({ icon: 'error', title: 'Título obligatorio', text: 'Debes ingresar un título' });
-    return;
-  }
-
-  if (!this.subtitle.trim()) {
-    Swal.fire({ icon: 'error', title: 'Subtítulo obligatorio', text: 'Debes ingresar un subtítulo' });
-    return;
-  }
-
-  if (!this.file_image) {
-    Swal.fire({ icon: 'error', title: 'Imagen obligatoria', text: 'Debes subir una imagen para el slider' });
-    return;
-  }
-
-  // Validar color obligatorio
-  let finalColor = '';
-  if (this.colorType === 'solid') {
-    if (!this.color || !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(this.color)) {
-      Swal.fire({ icon: 'error', title: 'Color obligatorio', text: 'Debes seleccionar un color sólido válido' });
+  save() {
+    // Validar campos obligatorios
+    if (!this.title.trim()) {
+      Swal.fire({ icon: 'error', title: 'Título obligatorio', text: 'Debes ingresar un título' });
       return;
     }
-    finalColor = this.color;
-  } else if (this.colorType === 'gradient') {
-    if (
-      !this.gradient.start || !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(this.gradient.start) ||
-      !this.gradient.end || !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(this.gradient.end)
-    ) {
-      Swal.fire({ icon: 'error', title: 'Degradado obligatorio', text: 'Debes seleccionar ambos colores para el degradado' });
+
+    if (!this.subtitle.trim()) {
+      Swal.fire({ icon: 'error', title: 'Subtítulo obligatorio', text: 'Debes ingresar un subtítulo' });
       return;
     }
-    finalColor = `linear-gradient(${this.gradient.direction || 'to right'}, ${this.gradient.start}, ${this.gradient.end})`;
-  }
 
-  // Validar link si se ingresó
-  if (this.link && !/^https?:\/\/[^\s]+$/.test(this.link)) {
-    Swal.fire({ icon: 'error', title: 'Link inválido', text: 'El link debe empezar con http:// o https://' });
-    return;
-  }
+    if (!this.file_image) {
+      Swal.fire({ icon: 'error', title: 'Imagen obligatoria', text: 'Debes subir una imagen para el slider' });
+      return;
+    }
 
-  // Preparar FormData
-  const formData = new FormData();
-  formData.append('title', this.title.trim());
-  formData.append('subtitle', this.subtitle.trim());
-
-  if (this.label) formData.append('label', this.label.trim());
-  if (this.link) formData.append('link', this.link.trim());
-  formData.append('color', finalColor);
-  formData.append('image', this.file_image);
-
-  // Enviar solicitud
-  this.sliderService.isLoadingSubject.next(true);
-  this.sliderService.createSliders(formData).subscribe({
-    next: (res: any) => {
-      if (res.message === 200) {
-        Swal.fire({ icon: 'success', title: 'Éxito', text: 'Slider creado con éxito' });
-        this.resetForm();
-      } else {
-        Swal.fire({ icon: 'warning', title: 'Atención', text: 'Respuesta inesperada del servidor' });
+    // Validar color obligatorio
+    let finalColor = '';
+    if (this.colorType === 'solid') {
+      if (!this.color || !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(this.color)) {
+        Swal.fire({ icon: 'error', title: 'Color obligatorio', text: 'Debes seleccionar un color sólido válido' });
+        return;
       }
-    },
-    error: (err) => {
-      Swal.fire({ icon: 'error', title: 'Error', text: 'Error en la comunicación con el servidor' });
-      console.error(err);
-    },
-    complete: () => this.sliderService.isLoadingSubject.next(false),
-  });
-}
+      finalColor = this.color;
+    } else if (this.colorType === 'gradient') {
+      if (
+        !this.gradient.start || !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(this.gradient.start) ||
+        !this.gradient.end || !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(this.gradient.end)
+      ) {
+        Swal.fire({ icon: 'error', title: 'Degradado obligatorio', text: 'Debes seleccionar ambos colores para el degradado' });
+        return;
+      }
+      finalColor = `linear-gradient(${this.gradient.direction || 'to right'}, ${this.gradient.start}, ${this.gradient.end})`;
+    }
+
+    // Validar link si se ingresó
+    if (this.link && !/^https?:\/\/[^\s]+$/.test(this.link)) {
+      Swal.fire({ icon: 'error', title: 'Link inválido', text: 'El link debe empezar con http:// o https://' });
+      return;
+    }
+
+    // Preparar FormData
+    const formData = new FormData();
+    formData.append('title', this.title.trim());
+    formData.append('subtitle', this.subtitle.trim());
+
+    if (this.label) formData.append('label', this.label.trim());
+    if (this.link) formData.append('link', this.link.trim());
+    formData.append('color', finalColor);
+    formData.append('image', this.file_image);
+
+    // Enviar solicitud
+    this.sliderService.isLoadingSubject.next(true);
+    this.sliderService.createSliders(formData).subscribe({
+      next: (res: any) => {
+        if (res.message === 200) {
+          Swal.fire({ icon: 'success', title: 'Éxito', text: 'Slider creado con éxito' });
+          this.resetForm();
+        } else {
+          Swal.fire({ icon: 'warning', title: 'Atención', text: 'Respuesta inesperada del servidor' });
+        }
+      },
+      error: (err) => {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Error en la comunicación con el servidor' });
+        console.error(err);
+      },
+      complete: () => this.sliderService.isLoadingSubject.next(false),
+    });
+  }
 
 
   private resetForm() {
