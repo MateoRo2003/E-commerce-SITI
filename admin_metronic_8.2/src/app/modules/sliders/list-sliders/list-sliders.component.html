@@ -1,1 +1,116 @@
-<p>list-sliders works!</p>
+<div class="card">
+    <div class="card-header border-0 pt-6">
+        <div class="card-title">
+            <!--begin::Search-->
+            <div class="d-flex align-items-center position-relative my-1">
+                <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-4">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                </i>
+
+                <input type="text" (ngModelChange)="onSearchChange($event)" [(ngModel)]="search"
+                    class="form-control form-control-solid w-250px ps-12" placeholder="Buscar Titulo" />
+
+
+                <!-- Loader a la derecha -->
+                <i *ngIf="isLoading$ | async"
+                    class="spinner-border spinner-border-sm text-primary position-absolute end-0 me-3"></i>
+            </div>
+            <!--end::Search-->
+        </div>
+
+        <div class="card-toolbar">
+            <!--begin::Add customer-->
+            <a routerLink="/categories/register" class="btn btn-primary">
+                Añadir Slider
+            </a>
+            <!--end::Add customer-->
+        </div>
+    </div>
+
+
+    <div class="card-body py-4">
+        <div class="table-responsive">
+            <div class="row g-5">
+                <ng-container *ngFor="let slider of sliders">
+                    <div class="col-12">
+                        <div class="slider-preview position-relative d-flex align-items-center p-5"
+                            [style.background]="slider.color || '#f5f5f5'"
+                            style="min-height: 400px; border-radius: 12px; overflow: hidden; width: 100%;">
+
+                            <!-- Shapes decorativos -->
+                            <div class="tp-slider-shape position-absolute w-100 h-100"
+                                style="top:0; left:0; z-index:1; pointer-events:none;">
+                                <img class="tp-slider-shape-1" src="assets/media/slider/shapes/slider-shape-1.png"
+                                    alt="slider-shape">
+                                <!-- <img class="tp-slider-shape-2" src="assets/media/slider/shapes/slider-shape-2.png"
+                                    alt="slider-shape"> -->
+                                <img class="tp-slider-shape-3" src="assets/media/slider/shapes/slider-shape-3.png"
+                                    alt="slider-shape">
+                                <img class="tp-slider-shape-4" src="assets/media/slider/shapes/slider-shape-4.png"
+                                    alt="slider-shape">
+                            </div>
+
+                            <!-- Estado + acciones -->
+                            <div class="position-absolute top-0 end-0 m-3 d-flex align-items-center gap-2"
+                                style="z-index:3;">
+                                <span *ngIf="slider.status == 1"
+                                    class="badge badge-light-primary fs-7 fw-bold">Activo</span>
+                                <span *ngIf="slider.status == 2"
+                                    class="badge badge-light-danger fs-7 fw-bold">Inactivo</span>
+
+                                <a [routerLink]="'/sliders/list/edit/' + slider.id"
+                                    class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm">
+                                    <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span
+                                            class="path2"></span></i>
+                                </a>
+
+                                <a href="#" onclick="return false;" (click)="deleteSlider(slider)"
+                                    class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm">
+                                    <i class="ki-duotone ki-trash fs-2">
+                                        <span class="path1"></span><span class="path2"></span>
+                                        <span class="path3"></span><span class="path4"></span><span
+                                            class="path5"></span>
+                                    </i>
+                                </a>
+                            </div>
+
+                            <!-- Texto -->
+                            <div class="text-content col-md-6 pl-6" style="z-index:2; position: relative;">
+                                <p class="mb-2 fs-6" [style.color]="isColorDark(slider.color) ? '#fff' : '#000'">
+                                    {{ slider.label }}
+                                </p>
+
+                                <h1 class="fw-bold mb-3 slider-title"
+                                    [style.color]="isColorDark(slider.color) ? '#fff' : '#000'">
+                                    {{ slider.title }}
+                                </h1>
+
+                                <p class="fs-5 mb-4" [style.color]="isColorDark(slider.color) ? '#fff' : '#000'">
+                                    {{ slider.subtitle }}
+                                </p>
+
+                                <a *ngIf="slider.link" [href]="slider.link" target="_blank"
+                                    class="btn btn-lg fw-bold px-4 py-2 btn-light">
+                                    Compra Ya
+                                </a>
+
+                            </div>
+
+                            <!-- Imagen -->
+                            <div class="image-content col-md-6 text-center" style="z-index:2; position: relative;">
+                                <img *ngIf="slider.image" [src]="slider.image" alt="Preview" class="img-fluid"
+                                    style="max-height: 300px; object-fit: contain;">
+                            </div>
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+
+
+            <ngb-pagination [collectionSize]="totalPages" [(page)]="currentPage" [pageSize]="5" [rotate]="true"
+                [boundaryLinks]="true" (pageChange)="loadPage($event)">
+            </ngb-pagination>
+        </div>
+    </div>
+</div>

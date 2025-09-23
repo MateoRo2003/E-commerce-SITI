@@ -185,7 +185,8 @@ export class EditCategorieComponent {
 
 
   save() {
-    if (!this.name || !this.position) {
+    // 1️⃣ Validaciones básicas
+    if (!this.name?.trim() || !this.position) {
       Swal.fire({
         icon: 'error',
         title: 'Campos obligatorios',
@@ -194,7 +195,8 @@ export class EditCategorieComponent {
       return;
     }
 
-    if (this.type_categorie == 2 && !this.categorie_second_id) {
+    // 2️⃣ Validaciones según nivel de categoría
+    if (this.type_categorie === 2 && !this.categorie_second_id) {
       Swal.fire({
         icon: 'error',
         title: 'Departamento obligatorio',
@@ -203,7 +205,7 @@ export class EditCategorieComponent {
       return;
     }
 
-    if (this.type_categorie == 3 && (!this.categorie_second_id || !this.categorie_third_id)) {
+    if (this.type_categorie === 3 && (!this.categorie_second_id || !this.categorie_third_id)) {
       Swal.fire({
         icon: 'error',
         title: 'Campos obligatorios',
@@ -212,11 +214,12 @@ export class EditCategorieComponent {
       return;
     }
 
-    let formData = new FormData();
+    // 3️⃣ Preparar FormData
+    const formData = new FormData();
     formData.append('type_categorie', this.type_categorie.toString());
-    formData.append('name', this.name);
+    formData.append('name', this.name.trim());
     formData.append('position', this.position.toString());
-    formData.append('status', this.status);
+    formData.append('status', this.status.toString());
 
     if (this.categorie_second_id) formData.append('categorie_second_id', this.categorie_second_id);
     if (this.categorie_third_id) formData.append('categorie_third_id', this.categorie_third_id);
@@ -224,50 +227,56 @@ export class EditCategorieComponent {
     if (this.icon) {
       formData.append('icon', this.icon);
     } else if (this.icon_removed) {
-      formData.append('icon_delete', 'true'); // 🔹 solo si se eliminó
+      formData.append('icon_delete', 'true');
     }
 
     if (this.file_image) {
       formData.append('image', this.file_image);
     } else if (this.image_removed) {
-      formData.append('image_delete', 'true'); // 🔹 solo si se eliminó
+      formData.append('image_delete', 'true');
     }
 
+    // 4️⃣ Activar loading
     this.categorieService.isLoadingSubject.next(true);
 
+    // 5️⃣ Llamada al backend
     this.categorieService.uptdateCategories(this.CATEGORIE_ID, formData).subscribe({
       next: (res: any) => {
-        if (res.mesagge === 200) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Éxito',
-            text: 'Categoría actualizada con éxito',
-          });
-          this.config();
-        } else if (res.mesagge === 403) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'La categoría ya existe',
-          });
-        } else {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Atención',
-            text: 'Respuesta inesperada del servidor',
-          });
+        switch (res.mesagge) {
+          case 200:
+            Swal.fire({
+              icon: 'success',
+              title: 'Éxito',
+              text: 'Categoría actualizada con éxito',
+            });
+            this.config(); // recarga / actualización del listado
+            break;
+          case 403:
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'La categoría ya existe',
+            });
+            break;
+          default:
+            Swal.fire({
+              icon: 'warning',
+              title: 'Atención',
+              text: 'Respuesta inesperada del servidor',
+            });
         }
       },
       error: (err) => {
         Swal.fire({
-          icon: 'warning',
-          title: 'Atención',
-          text: 'Respuesta inesperada del servidor',
+          icon: 'error',
+          title: 'Error',
+          text: 'Hubo un problema al actualizar la categoría',
         });
         console.error(err);
       },
-      complete: () => this.categorieService.isLoadingSubject.next(false)
+      complete: () => this.categorieService.isLoadingSubject.next(false),
     });
   }
+
 
 }

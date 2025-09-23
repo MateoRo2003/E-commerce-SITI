@@ -47,38 +47,67 @@
             <h5 class="fw-bold text-gray-700 mb-3" *ngIf="type_action == 2">Configuración de Color</h5>
 
             <!-- Sólido -->
+            <!-- Sólido -->
             <div *ngIf="type_action == 2 && colorType == 'solid'" class="mb-4">
                 <label class="form-label">Selecciona un color</label>
-                <input type="color" [(ngModel)]="color" name="color"
-                    class="form-control form-control-color w-100 h-50px rounded" />
+                <div class="d-flex gap-2 align-items-center">
+                    <input type="color" [(ngModel)]="color" name="colorPicker"
+                        class="form-control form-control-color w-100 h-45px" />
+
+                    <input type="text" [(ngModel)]="color" (ngModelChange)="onColorChange($event)" name="colorText"
+                        class="form-control" placeholder="#7cafde" maxlength="7" />
+                </div>
             </div>
 
+
+
+
+            <!-- Multicolor -->
             <!-- Multicolor -->
             <div *ngIf="colorType == 'multicolor'" class="mb-4">
-                <label class="form-label">Colores </label>
+                <label class="form-label">Colores</label>
                 <div *ngFor="let c of multiColors; let i = index" class="d-flex gap-2 mb-2 align-items-center">
-                    <input type="color" [(ngModel)]="multiColors[i]" [name]="'multiColor' + i"
-                        class="form-control form-control-color flex-grow-1 h-45px" />
+                    <input type="color" [(ngModel)]="multiColors[i]" [name]="'multiColorPicker' + i"
+                        class="form-control form-control-color flex-grow-1 h-45px w-250px" />
+
+                    <input type="text" [(ngModel)]="multiColors[i]" (ngModelChange)="onMultiColorChange(i, $event)"
+                        [name]="'multiColorText' + i" class="form-control" placeholder="#000000" maxlength="7" />
+
                     <button type="button" class="btn btn-sm btn-icon btn-danger" (click)="removeColor(i)">
                         <i class="bi bi-x-lg"></i>
                     </button>
-
                 </div>
+
                 <button type="button" class="btn btn-sm btn-light-primary" (click)="addColor()">+ Añadir Color</button>
             </div>
 
+
+            <!-- Degradado -->
             <!-- Degradado -->
             <div *ngIf="colorType == 'gradient'" class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Color Inicio</label>
-                    <input type="color" [(ngModel)]="gradient.start" name="gradientStart"
-                        class="form-control form-control-color w-100 h-45px" />
+                    <div class="d-flex gap-2 align-items-center">
+                        <input type="color" [(ngModel)]="gradient.start" name="gradientStartPicker"
+                            class="form-control form-control-color w-100 h-45px" />
+
+                        <input type="text" [(ngModel)]="gradient.start"
+                            (ngModelChange)="onGradientChange('start', $event)" name="gradientStartText"
+                            class="form-control" placeholder="#7cafde" maxlength="7" />
+                    </div>
                 </div>
+
                 <div class="col-md-6">
                     <label class="form-label">Color Fin</label>
-                    <input type="color" [(ngModel)]="gradient.end" name="gradientEnd"
-                        class="form-control form-control-color w-100 h-45px" />
+                    <div class="d-flex gap-2 align-items-center">
+                        <input type="color" [(ngModel)]="gradient.end" name="gradientEndPicker"
+                            class="form-control form-control-color w-100 h-45px" />
+
+                        <input type="text" [(ngModel)]="gradient.end" (ngModelChange)="onGradientChange('end', $event)"
+                            name="gradientEndText" class="form-control" placeholder="#0e5c6b" maxlength="7" />
+                    </div>
                 </div>
+
                 <div class="col-12">
                     <label class="form-label">Dirección</label>
                     <select [(ngModel)]="gradient.direction" name="gradientDirection" class="form-select">

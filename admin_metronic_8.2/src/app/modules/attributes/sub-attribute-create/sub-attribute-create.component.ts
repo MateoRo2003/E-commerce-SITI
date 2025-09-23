@@ -35,6 +35,49 @@ export class SubAttributeCreateComponent {
   ) { }
 
 
+  // Normaliza y valida un hex; devuelve '#rrggbb' o null si inválido
+  private normalizeHex(input: string): string | null {
+    if (!input) return null;
+    let v = input.trim().toLowerCase();
+
+    // eliminar espacios y caracteres extra
+    v = v.replace(/\s+/g, '');
+
+    // si vino sin '#', agregrarlo
+    if (!v.startsWith('#')) v = '#' + v;
+
+    // aceptar 3 o 6 hex digits
+    const re3 = /^#([0-9a-f]{3})$/i;
+    const re6 = /^#([0-9a-f]{6})$/i;
+
+    if (re3.test(v)) {
+      const m = v.match(re3)![1];
+      v = '#' + m[0] + m[0] + m[1] + m[1] + m[2] + m[2]; // expandir #abc -> #aabbcc
+    }
+
+    if (!re6.test(v)) return null;
+    return v;
+  }
+
+  // Solid
+  onColorChange(value: string) {
+    const v = this.normalizeHex(value);
+    if (v) this.color = v;
+    // si es null: no actualizamos (evita romper el color picker con valores inválidos)
+  }
+
+  // Multicolor (indexado)
+  onMultiColorChange(index: number, value: string) {
+    const v = this.normalizeHex(value);
+    if (v) this.multiColors[index] = v;
+  }
+
+  // Gradient
+  onGradientChange(which: 'start' | 'end', value: string) {
+    const v = this.normalizeHex(value);
+    if (v) this.gradient[which] = v;
+  }
+
 
 
   // Método para obtener propiedades visibles en la página actual

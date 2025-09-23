@@ -14,18 +14,18 @@ class SliderController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->search;
-
+        $search = $request->search ?? '';
         $sliders = Slider::where("title", "like", "%" . $search . "%")
             ->orderBy("id", "desc")
-            ->paginate(15);
+            ->paginate(3);
+
 
         return response()->json([
             "total" => $sliders->total(),
             "sliders" => $sliders->map(function ($slider) {
                 return [
                     "id" => $slider->id,
-                    "titile" => $slider->title,
+                    "title" => $slider->title,
                     "subtitle" => $slider->subtitle,
                     "label" => $slider->label,
                     "link" => $slider->link,
@@ -93,7 +93,7 @@ class SliderController extends Controller
             mkdir(dirname($fullPath), 0755, true);
         }
 
-        imagewebp($img, $fullPath, 80);
+        imagewebp($img, $fullPath, 100);
         imagedestroy($img);
 
         $data['image'] = $path;
@@ -165,7 +165,7 @@ class SliderController extends Controller
                 mkdir(dirname($fullPath), 0755, true);
             }
 
-            imagewebp($img, $fullPath, 80);
+            imagewebp($img, $fullPath, 100);
             imagedestroy($img);
 
             $data['image'] = $path;
@@ -184,7 +184,7 @@ class SliderController extends Controller
         return response()->json([
             "slider" => [
                 "id" => $slider->id,
-                "titile" => $slider->title,
+                "title" => $slider->title,
                 "subtitle" => $slider->subtitle,
                 "label" => $slider->label,
                 "link" => $slider->link,

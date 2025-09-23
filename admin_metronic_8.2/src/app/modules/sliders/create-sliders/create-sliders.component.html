@@ -21,7 +21,7 @@
             <div class="tp-slider-shape position-absolute w-100 h-100"
                 style="top:0; left:0; z-index:1; pointer-events:none;">
                 <img class="tp-slider-shape-1" src="assets/media/slider/shapes/slider-shape-1.png" alt="slider-shape">
-                <img class="tp-slider-shape-2" src="assets/media/slider/shapes/slider-shape-2.png" alt="slider-shape">
+                <!-- <img class="tp-slider-shape-2" src="assets/media/slider/shapes/slider-shape-2.png" alt="slider-shape"> -->
                 <img class="tp-slider-shape-3" src="assets/media/slider/shapes/slider-shape-3.png" alt="slider-shape">
                 <img class="tp-slider-shape-4" src="assets/media/slider/shapes/slider-shape-4.png" alt="slider-shape">
             </div>
@@ -61,33 +61,6 @@
         <div class="d-flex justify-content-center mt-10">
             <div class="col-md-6">
                 <div class="row g-4">
-
-                    <div class="col-12">
-                        <label class="form-label fw-semibold">Título <span class="text-danger">*</span></label>
-                        <input type="text" name="title" [(ngModel)]="title" class="form-control form-control-lg"
-                            placeholder="Ejemplo: Las mejores notebooks">
-                    </div>
-
-                    <div class="col-12">
-                        <label class="form-label fw-semibold">Subtítulo <span class="text-danger">*</span></label>
-                        <input type="text" name="subtitle" [(ngModel)]="subtitle" class="form-control form-control-lg"
-                            placeholder="Ejemplo: Oferta del día">
-                    </div>
-
-                    <div class="col-12">
-                        <label class="form-label fw-semibold">Descripción pequeña <small
-                                class="text-muted">(opcional)</small></label>
-                        <input type="text" name="label" [(ngModel)]="label" class="form-control form-control-lg"
-                            placeholder="Ejemplo: Hasta 20% de descuento">
-                    </div>
-
-                    <div class="col-12">
-                        <label class="form-label fw-semibold">Link del botón <small
-                                class="text-muted">(opcional)</small></label>
-                        <input type="text" name="link" [(ngModel)]="link" class="form-control form-control-lg"
-                            placeholder="Ejemplo: https://tusitio.com">
-                    </div>
-
                     <div class="col-12">
                         <label class="form-label fw-semibold">Tipo de fondo <span class="text-danger">*</span></label>
                         <select class="form-select" [(ngModel)]="colorType" name="colorType" required>
@@ -148,6 +121,33 @@
                         </div>
 
                     </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Título <span class="text-danger">*</span></label>
+                        <input type="text" name="title" [(ngModel)]="title" class="form-control form-control-lg"
+                            placeholder="Ejemplo: Las mejores notebooks">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Subtítulo <span class="text-danger">*</span></label>
+                        <input type="text" name="subtitle" [(ngModel)]="subtitle" class="form-control form-control-lg"
+                            placeholder="Ejemplo: Oferta del día">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Descripción pequeña <small
+                                class="text-muted">(opcional)</small></label>
+                        <input type="text" name="label" [(ngModel)]="label" class="form-control form-control-lg"
+                            placeholder="Ejemplo: Hasta 20% de descuento">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Link del botón <small
+                                class="text-muted">(opcional)</small></label>
+                        <input type="text" name="link" [(ngModel)]="link" class="form-control form-control-lg"
+                            placeholder="Ejemplo: https://tusitio.com">
+                    </div>
+
+
 
                     <div class="col-12">
                         <label class="form-label fw-semibold">
