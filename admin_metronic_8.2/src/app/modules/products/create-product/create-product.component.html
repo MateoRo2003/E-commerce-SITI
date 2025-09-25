@@ -1,0 +1,69 @@
+<div class="card shadow-sm border-0 rounded-3">
+    <!-- Loading -->
+    <div class="loading-overlay" *ngIf="isLoading$ | async">
+        <div class="spinner-border text-light" role="status"></div>
+        <div class="loading-text">Cargando...</div>
+    </div>
+
+    <div class="card-body p-5">
+        <!-- Título -->
+        <!-- <div class="text-center mb-5">
+            <h2 class="fw-bold mb-2">Crear Slider</h2>
+            <p class="text-muted">Completa los siguientes campos para crear un nuevo slider</p>
+        </div> -->
+
+        <!-- SLIDER: arriba -->
+        <!-- SLIDER: arriba -->
+        <!-- FORMULARIO: abajo y centrado -->
+        <div class="d-flex justify-content-center mt-10">
+            <div class="col-md-6">
+                <div class="row g-4">
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Nombre del producto: <span
+                                class="text-danger">*</span></label>
+                        <input type="text" name="title" [(ngModel)]="title" class="form-control form-control-lg"
+                            placeholder="Ejemplo: Las mejores notebooks">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">SKU: <span class="text-danger">*</span></label>
+                        <input type="text" name="sku" [(ngModel)]="sku" class="form-control form-control-lg"
+                            placeholder="Ejemplo: SKU12345">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Precio ARS: <span class="text-danger">*</span></label>
+                        <input type="number" name="price_ars" [(ngModel)]="price_ars"
+                            class="form-control form-control-lg" placeholder="Ejemplo: 1000">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Precio USD: <span class="text-danger">*</span></label>
+                        <input type="number" name="price_usd" [(ngModel)]="price_usd"
+                            class="form-control form-control-lg" placeholder="Ejemplo: 100">
+                    </div>
+                    <div class="col-12">
+                        <ckeditor data="description"></ckeditor>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">
+                            Imagen del slider
+                            <small class="text-muted">(Se recomienda PNG con fondo transparente)</small>
+                        </label>
+                        <input type="file" #imageInput class="form-control form-control-lg" accept=".png"
+                            (change)="processFile($event, imageInput)">
+                    </div>
+
+                    <div class="col-12 text-center mt-3">
+                        <button type="submit" (click)="save()" class="btn btn-primary btn-lg px-5">
+                            <span class="indicator-label">Guardar cambios</span>
+                            <span class="indicator-progress">
+                                Espere por favor...
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

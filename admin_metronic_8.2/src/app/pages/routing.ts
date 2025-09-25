@@ -63,6 +63,11 @@ const Routing: Routes = [
     loadChildren: () => import('../modules/sliders/sliders.module').then((m) => m.SlidersModule),
   },
 
+    {
+    path: 'products',
+    loadChildren: () => import('../modules/products/products.module').then((m) => m.ProductsModule),
+  },
+
 
   {
     path: '',

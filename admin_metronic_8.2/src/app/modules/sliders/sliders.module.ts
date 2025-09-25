@@ -9,7 +9,7 @@ import { DeleteSlidersComponent } from './delete-sliders/delete-sliders.componen
 import { ListSlidersComponent } from './list-sliders/list-sliders.component';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgbModule, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule, NgbModalModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { InlineSVGModule } from 'ng-inline-svg-2';
 
 
@@ -30,6 +30,7 @@ import { InlineSVGModule } from 'ng-inline-svg-2';
     ReactiveFormsModule,
     InlineSVGModule,
     NgbModalModule,
+    NgbPaginationModule,
   ]
 })
 export class SlidersModule { }

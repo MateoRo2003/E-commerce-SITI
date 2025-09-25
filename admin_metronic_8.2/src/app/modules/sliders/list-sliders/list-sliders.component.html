@@ -10,8 +10,6 @@
 
                 <input type="text" (ngModelChange)="onSearchChange($event)" [(ngModel)]="search"
                     class="form-control form-control-solid w-250px ps-12" placeholder="Buscar Titulo" />
-
-
                 <!-- Loader a la derecha -->
                 <i *ngIf="isLoading$ | async"
                     class="spinner-border spinner-border-sm text-primary position-absolute end-0 me-3"></i>
