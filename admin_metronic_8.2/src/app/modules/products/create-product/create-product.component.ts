@@ -15,12 +15,23 @@ export class CreateProductComponent {
   @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
   image_previsualize: any = "/assets/media/slider/slider-img-1.png";
   file_image: any = null;
+  resumen: string = '';
   isLoading$: any;
   sku: string = '';
   price_ars: number = 0;
   price_usd: number = 0;
-  description: any ="<p>Hello, world!</p>"
+  description: any = "<p>Hello, world!</p>"
 
+
+  categorie_first_id: string = '';
+  categorie_second_id: string = '';
+  categorie_third_id: string = '';
+  categories_first: any = [];
+  categories_seconds: any = [];
+  categories_seconds_backsups: any = [];
+
+  categories_thirds: any = [];
+  categories_thirds_backsups: any = [];
 
   constructor(public productService: ProductService) { }
 
@@ -53,7 +64,10 @@ export class CreateProductComponent {
     this.isLoadingView();
   }
 
-
+  changeDepartament() {
+    this.categories_seconds_backsups = this.categories_seconds.filter((item: any) => item.categorie_second_id == this.categorie_third_id)
+    // console.log(this.categories_seconds_backups,)
+  }
   removeImage(inputRef?: HTMLInputElement) {
     this.file_image = null;
     this.image_previsualize = "/assets/media/svg/files/blank-image.svg";
@@ -104,6 +118,10 @@ export class CreateProductComponent {
     });
   }
 
+
+  changeCategorie(){
+
+  }
 
   private resetForm() {
     this.title = '';

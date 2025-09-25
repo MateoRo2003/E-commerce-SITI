@@ -40,7 +40,45 @@
                             class="form-control form-control-lg" placeholder="Ejemplo: 100">
                     </div>
                     <div class="col-12">
-                        <ckeditor data="description"></ckeditor>
+                        <label class="form-label fw-semibold">Descripción: <span class="text-danger">*</span></label>
+                        <ckeditor data="Descripción"></ckeditor>
+                        <div class="d-flex flex-column mb-8">
+                            <label class="form-label fw-semibold">Resumen: <span class="text-danger">*</span></label>
+                            <textarea class="form-control form-control-solid" [(ngModel)]="resumen" rows="3"
+                                name="resumen" placeholder="*****"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="col-4">
+                            <label class="form-label fw-semibold fs-6 required">Departamento (Primer Nivel)</label>
+                            <select class="form-select form-select-solid rounded-3 shadow-sm fw-semibold"
+                                [(ngModel)]="categorie_first_id" (change)="changeDepartament()" name="departament">
+                                <option value="" disabled selected>Seleccione un departamento</option>
+                                <ng-container *ngFor="let item of categories_first">
+                                    <option [value]="item.id">{{ item.name }}</option>
+                                </ng-container>
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label fw-semibold fs-6 required">Categoría (Segundo Nivel)</label>
+                            <select class="form-select form-select-solid rounded-3 shadow-sm fw-semibold"
+                                [(ngModel)]="categorie_second_id" name="categorie" (change)="changeCategorie()">
+                                <option value="" disabled selected>Seleccione una categoría</option>
+                                <ng-container *ngFor="let item of categories_seconds_backsups">
+                                    <option [value]="item.id">{{ item.name }}</option>
+                                </ng-container>
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label fw-semibold fs-6 required">Sub Categoria (Tercer Nivel)</label>
+                            <select class="form-select form-select-solid rounded-3 shadow-sm fw-semibold"
+                                [(ngModel)]="categorie_third_id" name="categorie">
+                                <option value="" disabled selected>Seleccione una categoría</option>
+                                <ng-container *ngFor="let item of categories_thirds_backsups">
+                                    <option [value]="item.id">{{ item.name }}</option>
+                                </ng-container>
+                            </select>
+                        </div>
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-semibold">
